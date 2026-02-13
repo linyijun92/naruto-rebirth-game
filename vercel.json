@@ -1,0 +1,19 @@
+{
+  "name": "naruto-rebirth-game",
+  "version": 2,
+  "builds": [
+    {
+      "src": "src/backend/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/src/backend/src/index.ts"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
