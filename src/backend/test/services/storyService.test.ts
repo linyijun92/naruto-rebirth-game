@@ -1,7 +1,9 @@
+// Test file for storyService
+// Note: This is a mock test file with placeholder data
+
 describe('Story Service', () => {
   describe('getStoryNode', () => {
     it('should retrieve a story node by node ID', async () => {
-      // Mock implementation
       const nodeId = 'node_001';
       const expectedNode = {
         nodeId: 'node_001',
@@ -12,9 +14,8 @@ describe('Story Service', () => {
         createdAt: new Date(),
       };
 
-      // This would call the actual service in production
+      // This would call actual service in production
       // const storyNode = await storyService.getStoryNode(nodeId);
-
       const storyNode = expectedNode;
 
       expect(storyNode).toBeDefined();
@@ -24,16 +25,13 @@ describe('Story Service', () => {
     });
 
     it('should return null for non-existent node', async () => {
-      const nodeId = 'node_nonexistent';
-
-      // const storyNode = await storyService.getStoryNode(nodeId);
+      // const storyNode = await storyService.getStoryNode('node_nonexistent');
       const storyNode = null;
 
       expect(storyNode).toBeNull();
     });
 
     it('should handle node with choices', async () => {
-      const nodeId = 'node_choice_001';
       const expectedNode = {
         nodeId: 'node_choice_001',
         chapterId: 'chapter_01',
@@ -54,7 +52,6 @@ describe('Story Service', () => {
     });
 
     it('should include audio information if present', async () => {
-      const nodeId = 'node_audio_001';
       const expectedNode = {
         nodeId: 'node_audio_001',
         chapterId: 'chapter_01',
@@ -89,8 +86,6 @@ describe('Story Service', () => {
     });
 
     it('should return empty array for non-existent chapter', async () => {
-      const chapterId = 'chapter_nonexistent';
-
       const nodes: any[] = [];
 
       expect(nodes).toEqual([]);
@@ -113,17 +108,6 @@ describe('Story Service', () => {
 
   describe('validateChoice', () => {
     it('should return true for valid choice without requirements', async () => {
-      const choice = {
-        id: 'choice_1',
-        text: '继续前进',
-        nextNode: 'node_002',
-      };
-
-      const playerAttributes = {
-        chakra: 100,
-        level: 15,
-      };
-
       const isValid = true; // No requirements to validate
 
       expect(isValid).toBe(true);
@@ -210,7 +194,7 @@ describe('Story Service', () => {
   });
 
   describe('getNextNode', () => {
-    it('should retrieve the next node based on choice', async () => {
+    it('should retrieve next node based on choice', async () => {
       const choice = {
         id: 'choice_1',
         text: '选择A',
@@ -232,12 +216,6 @@ describe('Story Service', () => {
     });
 
     it('should return null for invalid next node ID', async () => {
-      const choice = {
-        id: 'choice_1',
-        text: 'Invalid choice',
-        nextNode: 'node_invalid',
-      };
-
       const nextNode = null;
 
       expect(nextNode).toBeNull();
@@ -246,7 +224,6 @@ describe('Story Service', () => {
 
   describe('Story Progression', () => {
     it('should track player progress through story', async () => {
-      const playerId = 'player_123';
       const progress = {
         currentChapter: 'chapter_01',
         currentNode: 'node_003',

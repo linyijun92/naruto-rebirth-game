@@ -10,7 +10,7 @@ export interface IStoryChoice {
 export interface IStoryNode extends Document {
   nodeId: string;
   chapterId: string;
-  type: 'dialogue' | 'choice' | 'event';
+  type: 'dialogue' | 'choice' | 'event' | 'narration';
   content: string;
   speaker?: string;
   choices?: IStoryChoice[];
@@ -42,7 +42,7 @@ const StoryNodeSchema: Schema = new Schema(
     },
     type: {
       type: String,
-      enum: ['dialogue', 'choice', 'event'],
+      enum: ['dialogue', 'choice', 'event', 'narration'],
       required: true,
     },
     content: {

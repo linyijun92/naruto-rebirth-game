@@ -1,6 +1,4 @@
-import request from 'supertest';
 import express, { Express } from 'express';
-import mongoose from 'mongoose';
 
 describe('Player Routes', () => {
   let app: Express;
@@ -24,7 +22,7 @@ describe('Player Routes', () => {
 
   describe('GET /api/player/:id', () => {
     it('should return player data for valid ID', async () => {
-      // This would be a real integration test with the actual route
+      // This would be a real integration test with actual route
       // const response = await request(app).get('/api/player/player_123');
 
       // Mock response for demonstration
@@ -113,13 +111,6 @@ describe('Player Routes', () => {
     });
 
     it('should validate attribute constraints', async () => {
-      const invalidData = {
-        attributes: {
-          chakra: -10, // Invalid: negative value
-          speed: 9999, // Invalid: exceeds max
-        },
-      };
-
       // Mock validation response
       const mockResponse = {
         status: 400,

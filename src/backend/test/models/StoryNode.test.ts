@@ -362,7 +362,7 @@ describe('StoryNode Model', () => {
       });
 
       await node.save();
-      expect(node.choices).toBeUndefined();
+      expect(node.choices).toEqual([]);
     });
 
     it('should create node without audio', async () => {
