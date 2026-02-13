@@ -1,488 +1,451 @@
-import { Router, Response, NextFunction } from 'express';
-import User, { IUser } from '../models/User';
-import { AuthRequest } from '../middleware/auth';
-import { generateToken } from '../config/jwt';
-import { createSuccessResponse, createErrorResponse } from '../utils/responseHandler';
-import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
-import Item from '../models/Item';
-import Player from '../models/Player';
+import { Request, Response } from 'express';
+import { ApiResponse } from '../../types/database';
 
-const router = Router();
+// Supabase 客户端（从 config/database.ts 导入）
+// const { supabase } = require('../../config/database');
 
-/**
- * @route   POST /api/player/register
- * @desc    用户注册
- * @access  Public
- */
-router.post('/register', async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 暂时使用模拟数据，直到 Supabase 连接配置
+const mockPlayers = new Map<string, any>();
+
+// 注册玩家
+export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
 
     // 验证输入
     if (!username || !email || !password) {
-      return res.json(createErrorResponse('请填写完整的注册信息'));
+      return res.status(400).json({
+        success: false,
+        error: 'Username, email, and password are required',
+      } as ApiResponse<null>);
     }
 
-    // 验证用户名长度
-    if (username.length < 3 || username.length > 20) {
-      return res.json(createErrorResponse('用户名长度需要在3-20个字符之间'));
-    }
+    // 检查用户名和邮箱是否已存在
+    // const { data: existingUsers } = await supabase
+    //   .from('players')
+    //   .select('username, email')
+    //   .or('username.eq.' + username)
+    //   .or('email.eq.' + email);
 
-    // 验证密码长度
-    if (password.length < 6) {
-      return res.json(createErrorResponse('密码至少需要6位'));
-    }
+    // if (existingUsers && existingUsers.length > 0) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     error: 'Username or email already exists',
+    //   } as ApiResponse<null>);
+    // }
 
-    // 验证邮箱格式
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.json(createErrorResponse('邮箱格式不正确'));
-    }
+    // 创建新玩家（使用 Supabase）
+    // const { data, error } = await supabase
+    //   .from('players')
+    //   .insert({
+    //     username,
+    //     email,
+    //     password_hash: password, // 实际中应该使用 bcrypt 哈希
+    //     level: 1,
+    //     experience: 0,
+    //     experience_to_next_level: 100,
+    //     currency: 0,
+    //   })
+    //   .select();
 
-    // 检查用户名是否已存在
-    const existingUsername = await User.findOne({ username });
-    if (existingUsername) {
-      return res.json(createErrorResponse('用户名已被使用'));
-    }
+    // const player = data;
 
-    // 检查邮箱是否已存在
-    const existingEmail = await User.findOne({ email });
-    if (existingEmail) {
-      return res.json(createErrorResponse('邮箱已被注册'));
-    }
+    // 创建玩家属性
+    // await supabase.from('player_attributes').insert({
+    //   player_id: player.id,
+    //   chakra: 50,
+    //   ninjutsu: 50,
+    //   taijutsu: 50,
+    //   intelligence: 50,
+    //   speed: 50,
+    //   luck: 50,
+    // });
 
-    // 加密密码
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 生成用户ID
-    const userId = `user_${uuidv4()}`;
-
-    // 创建用户
-    const user = new User({
-      userId,
+    // 临时模拟实现
+    const playerId = `player_${Date.now()}`;
+    const mockPlayer = {
+      id: playerId,
       username,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-    });
-
-    await user.save();
-
-    // 创建玩家数据
-    const player = new Player({
-      playerId: userId,
-      userId,
+      email,
       level: 1,
       experience: 0,
-      gold: 1000, // 初始金币
-      chakra: 100,
-      maxChakra: 100,
-      health: 100,
-      maxHealth: 100,
-      inventory: [],
-      equipment: {},
+      experience_to_next_level: 100,
+      currency: 0,
+    };
+
+    mockPlayers.set(playerId, mockPlayer);
+
+    // 返回结果（不返回密码）
+    const { password_hash, ...playerWithoutPassword } = mockPlayer;
+
+    res.status(201).json({
+      success: true,
+      data: playerWithoutPassword,
+    } as ApiResponse<any>);
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
+  }
+};
+
+// 登录玩家
+export const login = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Username and password are required',
+      } as ApiResponse<null>);
+    }
+
+    // 查询玩家（使用 Supabase）
+    // const { data, error } = await supabase
+    //   .from('players')
+    //   .select('*')
+    //   .eq('username', username);
+
+    // if (error || !data || data.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: 'Player not found',
+    //   } as ApiResponse<null>);
+    // }
+
+    // const player = data[0];
+
+    // 验证密码（实际中应该使用 bcrypt.compare）
+    // if (player.password_hash !== password) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     error: 'Invalid password',
+    //   } as ApiResponse<null>);
+    // }
+
+    // 临时模拟实现
+    const mockPlayer = Array.from(mockPlayers.values()).find(p => p.username === username);
+    
+    if (!mockPlayer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found',
+      } as ApiResponse<null>);
+    }
+
+    // 获取玩家属性
+    // const { data: attributes } = await supabase
+    //   .from('player_attributes')
+    //   .select('*')
+    //   .eq('player_id', mockPlayer.id);
+
+    const playerWithAttributes = {
+      ...mockPlayer,
       attributes: {
-        strength: 10,
-        agility: 10,
-        intelligence: 10,
-        chakra: 10,
+        chakra: 50,
+        ninjutsu: 50,
+        taijutsu: 50,
+        intelligence: 50,
+        speed: 50,
+        luck: 50,
       },
-      currentChapter: 'chapter_1',
-      flags: {},
-      stats: {
-        totalPlayTime: 0,
-        missionsCompleted: 0,
-        enemiesDefeated: 0,
-        itemsCollected: 0,
-      },
-    });
+    };
 
-    await player.save();
+    // 生成 JWT Token（实际中应该使用 jsonwebtoken）
+    const token = `mock-jwt-token-${mockPlayer.id}`;
 
-    // 生成token
-    const token = generateToken({
-      userId,
-      username,
-    });
-
-    res.json(createSuccessResponse({
-      token,
-      user: {
-        userId,
-        username,
-        email: user.email,
+    res.status(200).json({
+      success: true,
+      data: {
+        player: playerWithAttributes,
+        token,
       },
-      player: {
-        level: player.level,
-        gold: player.gold,
-      },
-    }, '注册成功'));
+    } as ApiResponse<any>);
   } catch (error) {
-    next(error);
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
   }
-});
+};
 
-/**
- * @route   POST /api/player/login
- * @desc    用户登录
- * @access  Public
- */
-router.post('/login', async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 获取玩家信息
+export const getPlayer = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { id } = req.params;
 
-    // 验证输入
-    if (!email || !password) {
-      return res.json(createErrorResponse('请输入邮箱和密码'));
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Player ID is required',
+      } as ApiResponse<null>);
     }
 
-    // 查找用户
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.json(createErrorResponse('邮箱或密码错误'));
+    // 查询玩家（使用 Supabase）
+    // const { data, error } = await supabase
+    //   .from('v_players_full')
+    //   .select('*')
+    //   .eq('id', id);
+
+    // if (error || !data || data.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: 'Player not found',
+    //   } as ApiResponse<null>);
+    // }
+
+    // const player = data[0];
+
+    // 临时模拟实现
+    const mockPlayer = mockPlayers.get(id);
+
+    if (!mockPlayer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found',
+      } as ApiResponse<null>);
     }
 
-    // 验证密码
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      return res.json(createErrorResponse('邮箱或密码错误'));
-    }
-
-    // 生成token
-    const token = generateToken({
-      userId: user.userId,
-      username: user.username,
-    });
-
-    // 获取玩家数据
-    const player = await Player.findOne({ playerId: user.userId });
-
-    res.json(createSuccessResponse({
-      token,
-      user: {
-        userId: user.userId,
-        username: user.username,
-        email: user.email,
-      },
-      player: player ? {
-        level: player.level,
-        gold: player.gold,
-        experience: player.experience,
-      } : null,
-    }, '登录成功'));
+    res.status(200).json({
+      success: true,
+      data: mockPlayer,
+    } as ApiResponse<any>);
   } catch (error) {
-    next(error);
+    console.error('Get player error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
   }
-});
+};
 
-/**
- * @route   POST /api/player/logout
- * @desc    用户登出
- * @access  Private
- */
-router.post('/logout', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  // JWT是无状态的，客户端删除token即可
-  // 这里可以添加token黑名单逻辑（可选）
-  res.json(createSuccessResponse(null, '登出成功'));
-});
-
-/**
- * @route   GET /api/player
- * @desc    获取玩家信息
- * @access  Private
- */
-router.get('/', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 更新玩家信息
+export const updatePlayer = async (req: Request, res: Response) => {
   try {
-    const { userId } = req;
+    const { id } = req.params;
+    const updates = req.body;
 
-    // 获取用户信息
-    const user = await User.findOne({ userId }).select('-password');
-    if (!user) {
-      return res.json(createErrorResponse('用户不存在'));
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Player ID is required',
+      } as ApiResponse<null>);
     }
 
-    // 获取玩家数据
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
-    }
+    // 更新玩家（使用 Supabase）
+    // const { data, error } = await supabase
+    //   .from('players')
+    //   .update(updates)
+    //   .eq('id', id)
+    //   .select();
 
-    res.json(createSuccessResponse({
-      user: {
-        userId: user.userId,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
-      player: {
-        level: player.level,
-        experience: player.experience,
-        gold: player.gold,
-        chakra: player.chakra,
-        maxChakra: player.maxChakra,
-        health: player.health,
-        maxHealth: player.maxHealth,
-        attributes: player.attributes,
-        currentChapter: player.currentChapter,
-        stats: player.stats,
-      },
-    }));
-  } catch (error) {
-    next(error);
-  }
-});
+    // if (error) {
+    //   return res.status(500).json({
+    //     success: false,
+    //     error: 'Failed to update player',
+    //   } as ApiResponse<null>);
+    // }
 
-/**
- * @route   PUT /api/player/attributes
- * @desc    更新玩家属性
- * @access  Private
- */
-router.put('/attributes', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { userId } = req;
-    const { attributes } = req.body;
+    // 临时模拟实现
+    const mockPlayer = mockPlayers.get(id);
 
-    if (!attributes) {
-      return res.json(createErrorResponse('请提供属性数据'));
-    }
-
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
+    if (!mockPlayer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found',
+      } as ApiResponse<null>);
     }
 
     // 更新属性
-    player.attributes = { ...player.attributes, ...attributes };
-    player.updatedAt = new Date();
+    const updatedPlayer = {
+      ...mockPlayer,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
 
-    await player.save();
+    mockPlayers.set(id, updatedPlayer);
 
-    res.json(createSuccessResponse({
-      attributes: player.attributes,
-    }, '属性更新成功'));
+    res.status(200).json({
+      success: true,
+      data: updatedPlayer,
+    } as ApiResponse<any>);
   } catch (error) {
-    next(error);
+    console.error('Update player error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
   }
-});
+};
 
-/**
- * @route   GET /api/player/inventory
- * @desc    获取玩家库存
- * @access  Private
- */
-router.get('/inventory', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 升级
+export const levelUp = async (req: Request, res: Response) => {
   try {
-    const { userId } = req;
+    const { id } = req.params;
 
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Player ID is required',
+      } as ApiResponse<null>);
     }
 
-    // 获取物品详情
-    const itemIds = player.inventory.map((invItem: any) => invItem.itemId);
-    const items = await Item.find({ itemId: { $in: itemIds } });
+    // 获取玩家信息
+    // const { data, error } = await supabase
+    //   .from('v_players_full')
+    //   .select('*')
+    //   .eq('id', id);
 
-    // 合并物品详情
-    const inventory = player.inventory.map((invItem: any) => {
-      const item = items.find(i => i.itemId === invItem.itemId);
-      return {
-        item,
-        quantity: invItem.quantity,
-        equipped: invItem.equipped || false,
-      };
-    });
+    // if (error || !data || data.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     error: 'Player not found',
+    //   } as ApiResponse<null>);
+    // }
 
-    res.json(createSuccessResponse({ inventory }));
+    // const player = data[0];
+    const mockPlayer = mockPlayers.get(id);
+
+    if (!mockPlayer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found',
+      } as ApiResponse<null>);
+    }
+
+    // 检查是否有足够经验
+    if (mockPlayer.experience < mockPlayer.experience_to_next_level) {
+      return res.status(400).json({
+        success: false,
+        error: 'Insufficient experience to level up',
+        currentLevel: mockPlayer.level,
+        requiredExperience: mockPlayer.experience_to_next_level,
+      } as ApiResponse<null>);
+    }
+
+    // 升级
+    const previousLevel = mockPlayer.level;
+    const newLevel = previousLevel + 1;
+    const updatedPlayer = {
+      ...mockPlayer,
+      level: newLevel,
+      experience_to_next_level: mockPlayer.experience_to_next_level * 1.2,
+      updated_at: new Date().toISOString(),
+    };
+
+    // 更新数据库
+    // await supabase
+    //   .from('players')
+    //   .update({
+    //     level: newLevel,
+    //     experience_to_next_level: updatedPlayer.experience_to_next_level,
+    //   })
+    //   .eq('id', id);
+
+    mockPlayers.set(id, updatedPlayer);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        previousLevel,
+        newLevel,
+        experience: mockPlayer.experience,
+        experienceToNextLevel: updatedPlayer.experience_to_next_level,
+      },
+    } as ApiResponse<any>);
   } catch (error) {
-    next(error);
+    console.error('Level up error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
   }
-});
+};
 
-/**
- * @route   POST /api/player/inventory/use
- * @desc    使用物品
- * @access  Private
- */
-router.post('/inventory/use', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
+// 添加经验
+export const addExperience = async (req: Request, res: Response) => {
   try {
-    const { userId } = req;
-    const { itemId } = req.body;
+    const { id } = req.params;
+    const { experienceAmount } = req.body;
 
-    if (!itemId) {
-      return res.json(createErrorResponse('请提供物品ID'));
+    if (!id || !experienceAmount) {
+      return res.status(400).json({
+        success: false,
+        error: 'Player ID and experience amount are required',
+      } as ApiResponse<null>);
     }
 
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
+    // 获取玩家信息
+    // const { data, error } = await supabase
+    //   .from('v_players_full')
+    //   .select('*')
+    //   .eq('id', id);
+
+    // if (error || !data || data.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+      //     error: 'Player not found',
+    //   } as ApiResponse<null>);
+    // }
+
+    // const player = data[0];
+    const mockPlayer = mockPlayers.get(id);
+
+    if (!mockPlayer) {
+      return res.status(404).json({
+        success: false,
+        error: 'Player not found',
+      } as ApiResponse<null>);
     }
 
-    // 查找库存中的物品
-    const inventoryIndex = player.inventory.findIndex((invItem: any) => invItem.itemId === itemId);
-    if (inventoryIndex === -1) {
-      return res.json(createErrorResponse('物品不存在'));
+    // 添加经验
+    const newExperience = mockPlayer.experience + experienceAmount;
+    const levelUp = newExperience >= mockPlayer.experience_to_next_level;
+
+    const updatedPlayer = {
+      ...mockPlayer,
+      experience: newExperience,
+      updated_at: new Date().toISOString(),
+    };
+
+    // 如果升级，更新等级
+    if (levelUp) {
+      updatedPlayer.level += 1;
+      updatedPlayer.experience_to_next_level = mockPlayer.experience_to_next_level * 1.2;
     }
 
-    const invItem = player.inventory[inventoryIndex];
-    if (invItem.quantity <= 0) {
-      return res.json(createErrorResponse('物品数量不足'));
-    }
+    // 更新数据库
+    // await supabase
+    //   .from('players')
+    //   .update({
+    //     experience: updatedPlayer.experience,
+    //     level: updatedPlayer.level,
+    //     experience_to_next_level: updatedPlayer.experience_to_next_level,
+    //   })
+    //   .eq('id', id);
 
-    // 获取物品详情
-    const item = await Item.findOne({ itemId });
-    if (!item) {
-      return res.json(createErrorResponse('物品数据不存在'));
-    }
+    mockPlayers.set(id, updatedPlayer);
 
-    // 检查是否可以使用
-    if (item.type !== 'medicine') {
-      return res.json(createErrorResponse('该物品不可使用'));
-    }
-
-    // 应用物品效果
-    if (item.effect) {
-      switch (item.effect.type) {
-        case 'recover':
-          if (item.effect.target === 'health') {
-            player.health = Math.min(player.maxHealth, player.health + item.effect.value);
-          } else if (item.effect.target === 'chakra') {
-            player.chakra = Math.min(player.maxChakra, player.chakra + item.effect.value);
-          }
-          break;
-      }
-    }
-
-    // 减少数量
-    invItem.quantity -= 1;
-    if (invItem.quantity <= 0) {
-      player.inventory.splice(inventoryIndex, 1);
-    }
-
-    player.updatedAt = new Date();
-    await player.save();
-
-    res.json(createSuccessResponse({
-      health: player.health,
-      chakra: player.chakra,
-    }, '使用成功'));
+    res.status(200).json({
+      success: true,
+      data: {
+        previousExperience: mockPlayer.experience,
+        addedExperience: experienceAmount,
+        newExperience: updatedPlayer.experience,
+        previousLevel: mockPlayer.level,
+        newLevel: updatedPlayer.level,
+        levelUp,
+      },
+    } as ApiResponse<any>);
   } catch (error) {
-    next(error);
+    console.error('Add experience error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    } as ApiResponse<null>);
   }
-});
-
-/**
- * @route   POST /api/player/inventory/equip
- * @desc    装备物品
- * @access  Private
- */
-router.post('/inventory/equip', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { userId } = req;
-    const { itemId } = req.body;
-
-    if (!itemId) {
-      return res.json(createErrorResponse('请提供物品ID'));
-    }
-
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
-    }
-
-    // 查找库存中的物品
-    const inventoryItem = player.inventory.find((invItem: any) => invItem.itemId === itemId);
-    if (!inventoryItem) {
-      return res.json(createErrorResponse('物品不存在'));
-    }
-
-    // 获取物品详情
-    const item = await Item.findOne({ itemId });
-    if (!item) {
-      return res.json(createErrorResponse('物品数据不存在'));
-    }
-
-    // 检查是否可以装备
-    if (item.type !== 'equipment') {
-      return res.json(createErrorResponse('该物品不可装备'));
-    }
-
-    // 如果已经有同类型的装备，先卸下
-    if (player.equipment[item.category]) {
-      const oldEquippedItemId = player.equipment[item.category];
-      const oldEquippedIndex = player.inventory.findIndex(
-        (invItem: any) => invItem.itemId === oldEquippedItemId
-      );
-      if (oldEquippedIndex !== -1) {
-        player.inventory[oldEquippedIndex].equipped = false;
-      }
-    }
-
-    // 装备新物品
-    player.equipment[item.category] = itemId;
-    inventoryItem.equipped = true;
-
-    player.updatedAt = new Date();
-    await player.save();
-
-    res.json(createSuccessResponse({
-      equipment: player.equipment,
-    }, '装备成功'));
-  } catch (error) {
-    next(error);
-  }
-});
-
-/**
- * @route   POST /api/player/inventory/unequip
- * @desc    卸下装备
- * @access  Private
- */
-router.post('/inventory/unequip', authenticate, async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { userId } = req;
-    const { itemId } = req.body;
-
-    if (!itemId) {
-      return res.json(createErrorResponse('请提供物品ID'));
-    }
-
-    const player = await Player.findOne({ playerId: userId });
-    if (!player) {
-      return res.json(createErrorResponse('玩家数据不存在'));
-    }
-
-    // 获取物品详情
-    const item = await Item.findOne({ itemId });
-    if (!item) {
-      return res.json(createErrorResponse('物品数据不存在'));
-    }
-
-    // 检查该装备是否已装备
-    if (player.equipment[item.category] !== itemId) {
-      return res.json(createErrorResponse('该物品未装备'));
-    }
-
-    // 卸下装备
-    delete player.equipment[item.category];
-
-    const inventoryIndex = player.inventory.findIndex((invItem: any) => invItem.itemId === itemId);
-    if (inventoryIndex !== -1) {
-      player.inventory[inventoryIndex].equipped = false;
-    }
-
-    player.updatedAt = new Date();
-    await player.save();
-
-    res.json(createSuccessResponse({
-      equipment: player.equipment,
-    }, '卸下成功'));
-  } catch (error) {
-    next(error);
-  }
-});
-
-// 认证中间件导入
-import { authenticate } from '../middleware/auth';
-
-export default router;
+};

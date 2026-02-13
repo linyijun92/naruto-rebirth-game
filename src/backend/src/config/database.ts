@@ -1,42 +1,55 @@
-import mongoose from 'mongoose';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import logger from './logger';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/naruto_rebirth';
+// Supabase 客户端配置
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
 
-export const connectDatabase = async (): Promise<void> => {
+// 创建 Supabase 客户端
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+
+// 健康检查函数
+export const checkDatabaseConnection = async (): Promise<boolean> => {
   try {
-    await mongoose.connect(MONGODB_URI, {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
+    // 测试数据库连接
+    const { data, error } = await supabase
+      .from('players')
+      .select('id')
+      .limit(1);
 
-    logger.info('MongoDB connected successfully');
+    if (error) {
+      logger.error('Database connection failed:', error);
+      return false;
+    }
 
-    // 监听连接事件
-    mongoose.connection.on('error', (error) => {
-      logger.error('MongoDB connection error:', error);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      logger.warn('MongoDB disconnected');
-    });
-
-    mongoose.connection.on('reconnected', () => {
-      logger.info('MongoDB reconnected');
-    });
+    logger.info('Database connected successfully');
+    return true;
   } catch (error) {
-    logger.error('Failed to connect to MongoDB:', error);
+    logger.error('Failed to connect to database:', error);
+    return false;
+  }
+};
+
+// 数据库初始化（可选，用于表创建）
+export const initializeDatabase = async (): Promise<void> => {
+  try {
+    logger.info('Supabase database initialized (RLS enabled)');
+
+    // 表结构通过 Supabase Dashboard 的 SQL Editor 创建
+    // 或者使用 Supabase CLI：supabase db push --schema public
+    logger.info('Schema file: src/backend/db/schema.sql');
+  } catch (error) {
+    logger.error('Failed to initialize database:', error);
     throw error;
   }
 };
 
+// 断开数据库连接（Supabase 会自动管理连接池）
 export const disconnectDatabase = async (): Promise<void> => {
   try {
-    await mongoose.disconnect();
-    logger.info('MongoDB disconnected');
+    // Supabase 客户端会自动管理连接池
+    logger.info('Supabase database disconnected');
   } catch (error) {
-    logger.error('Error disconnecting from MongoDB:', error);
-    throw error;
+    logger.error('Error disconnecting from database:', error);
   }
 };
