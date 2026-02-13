@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pub-cache/
+.pub/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.build/
+
+# Flutter
+*.iml
+*.apk
+*.app
+*.ipa
+*.ipa.dSYM.zip
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Build
+dist/
+build/
+.dart_tool/
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+
+# Debug
+debug/
+release/
+
+# Mobile specific
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/.last_build_id
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/.generated/
+
+android/app/build/
+android/.gradle/
+android/local.properties
+android/*.iml
+android/.idea/
+
+# Backup
+*.bak
+*.backup
