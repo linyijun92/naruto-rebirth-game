@@ -1,0 +1,238 @@
+{
+  "chapters": [
+    {
+      "chapterId": "chapter_01",
+      "title": "第一章：重生木叶",
+      "description": "你在火影忍者的世界重生，一切从这里开始...",
+      "startNodeId": "node_01_01",
+      "requiredChapters": [],
+      "isUnlocked": true
+    },
+    {
+      "chapterId": "chapter_02",
+      "title": "第二章：忍者学校",
+      "description": "进入忍者学校学习忍术基础知识",
+      "startNodeId": "node_02_01",
+      "requiredChapters": ["chapter_01"],
+      "isUnlocked": false
+    }
+  ],
+  "nodes": [
+    {
+      "nodeId": "node_01_01",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "你缓缓睁开眼睛，发现自己躺在一个陌生的房间里。阳光从窗户洒进来，空气中弥漫着淡淡的花香。",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_01_01",
+          "text": "起床查看四周",
+          "nextNode": "node_01_02",
+          "requirements": null
+        },
+        {
+          "id": "choice_01_01_02",
+          "text": "继续躺一会儿",
+          "nextNode": "node_01_03",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_02",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "房间里陈设简单，墙上挂着一张木叶村忍者村的地图。你走到镜子前，看到一个陌生的少年——这就是你现在的样子。",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_02_01",
+          "text": "查看自己的信息",
+          "nextNode": "node_01_04",
+          "requirements": null
+        },
+        {
+          "id": "choice_01_02_02",
+          "text": "走出房间",
+          "nextNode": "node_01_05",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_03",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "你在床上躺了一会儿，脑海中逐渐浮现出一些记忆。你是木叶村的一个普通少年，从小梦想成为忍着。",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_03_01",
+          "text": "起床准备",
+          "nextNode": "node_01_02",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_04",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "你查看了自己的信息：\n姓名：宇智波鸣人（暂定）\n查克拉：100\n忍术：50\n体术：50\n智力：50\n\n这些数值可以随着你的成长而提升。",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_04_01",
+          "text": "走出房间",
+          "nextNode": "node_01_05",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_05",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "你走出房间，看到一个熟悉的身影——那是你母亲的背影。她正在准备早餐。",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_05_01",
+          "text": "向母亲打招呼",
+          "nextNode": "node_01_06",
+          "requirements": null
+        },
+        {
+          "id": "choice_01_05_02",
+          "text": "默默观察",
+          "nextNode": "node_01_07",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_06",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "\"早安，妈妈！\" 你笑着打招呼。\n\n母亲转过身，脸上带着温暖的笑容：\"早安，小鸣。今天是个重要的日子，你还记得吗？\"",
+      "speaker": "母亲",
+      "choices": [
+        {
+          "id": "choice_01_06_01",
+          "text": "记得，是忍者学校入学考试！",
+          "nextNode": "node_01_08",
+          "requirements": null
+        },
+        {
+          "id": "choice_01_06_02",
+          "text": "不太记得了...",
+          "nextNode": "node_01_09",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_07",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "母亲似乎察觉到你的存在，转过身来：\"怎么站在那里发呆？快过来吃早饭，今天是你忍者学校入学考试的日子！\"",
+      "speaker": "母亲",
+      "choices": [
+        {
+          "id": "choice_01_07_01",
+          "text": "好的，我这就来！",
+          "nextNode": "node_01_08",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_08",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "\"没错！\" 你兴奋地说，\"我一定要通过考试，成为一名优秀的忍者！\"\n\n母亲摸了摸你的头：\"妈妈相信你一定能做到的。来，先吃早饭吧。\"\n\n吃完早饭后，你满怀信心地走向忍者学校...",
+      "speaker": null,
+      "choices": [
+        {
+          "id": "choice_01_08_01",
+          "text": "前往忍者学校",
+          "nextNode": "node_01_end",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_09",
+      "chapterId": "chapter_01",
+      "type": "dialogue",
+      "content": "母亲温柔地笑着说：\"是忍者学校入学考试呀，你为了这一天准备了很久呢。快吃早饭吧，别迟到了。\"\n\n你恍然大悟，今天确实是你人生中重要的转折点...",
+      "speaker": "母亲",
+      "choices": [
+        {
+          "id": "choice_01_09_01",
+          "text": "努力准备考试",
+          "nextNode": "node_01_08",
+          "requirements": null
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_01_end",
+      "chapterId": "chapter_01",
+      "type": "ending",
+      "content": "第一章：重生木叶 - 完\n\n你成功重生到了火影忍者的世界，即将开始你的忍者之路。接下来的冒险等待着你...\n\n（第二章将在完成一定任务后解锁）",
+      "speaker": null,
+      "choices": [],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_02_01",
+      "chapterId": "chapter_02",
+      "type": "dialogue",
+      "content": "欢迎来到忍者学校！这里将是你学习忍术基础的地方。",
+      "speaker": "伊鲁卡老师",
+      "choices": [
+        {
+          "id": "choice_02_01_01",
+          "text": "开始学习",
+          "nextNode": "node_02_02",
+          "requirements": {
+            "level": 2
+          }
+        }
+      ],
+      "backgroundMusic": null,
+      "soundEffect": null
+    },
+    {
+      "nodeId": "node_02_02",
+      "chapterId": "chapter_02",
+      "type": "ending",
+      "content": "第二章内容待续...",
+      "speaker": null,
+      "choices": [],
+      "backgroundMusic": null,
+      "soundEffect": null
+    }
+  ]
+}

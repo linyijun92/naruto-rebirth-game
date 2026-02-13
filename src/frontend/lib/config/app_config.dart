@@ -15,6 +15,8 @@ class AppConfig {
     'ninjutsu': 50,
     'taijutsu': 50,
     'intelligence': 50,
+    'speed': 50,
+    'luck': 50,
   };
 
   static const Map<String, int> maxAttributes = {
@@ -22,6 +24,8 @@ class AppConfig {
     'ninjutsu': 999,
     'taijutsu': 999,
     'intelligence': 999,
+    'speed': 999,
+    'luck': 999,
   };
 
   // 游戏货币

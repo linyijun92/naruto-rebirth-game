@@ -15,6 +15,8 @@ class Save {
   final List<dynamic> quests;
   final List<dynamic> achievements;
   final int playTime;
+  @JsonKey(name: 'isCloud')
+  final bool isCloud;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -30,6 +32,7 @@ class Save {
     required this.quests,
     required this.achievements,
     required this.playTime,
+    this.isCloud = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -50,6 +53,7 @@ class Save {
     List<dynamic>? quests,
     List<dynamic>? achievements,
     int? playTime,
+    bool? isCloud,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -65,8 +69,15 @@ class Save {
       quests: quests ?? this.quests,
       achievements: achievements ?? this.achievements,
       playTime: playTime ?? this.playTime,
+      isCloud: isCloud ?? this.isCloud,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
+
+  /// 检查是否为自动存档
+  bool get isAutoSave => saveId.startsWith('auto_save_');
+
+  /// 检查是否为手动存档
+  bool get isManualSave => saveId.startsWith('manual_save_');
 }

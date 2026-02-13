@@ -11,6 +11,8 @@ export interface ISave extends Document {
     ninjutsu: number;
     taijutsu: number;
     intelligence: number;
+    speed: number;
+    luck: number;
   };
   currentChapter: string;
   inventory: any[];
@@ -53,6 +55,8 @@ const SaveSchema: Schema = new Schema(
       ninjutsu: { type: Number, default: 50 },
       taijutsu: { type: Number, default: 50 },
       intelligence: { type: Number, default: 50 },
+      speed: { type: Number, default: 50 },
+      luck: { type: Number, default: 50 },
     },
     currentChapter: {
       type: String,

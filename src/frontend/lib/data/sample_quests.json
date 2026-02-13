@@ -1,0 +1,374 @@
+{
+  "quests": [
+    {
+      "questId": "main_01_01",
+      "title": "忍者学校的召唤",
+      "description": "今天是忍者学校入学考试的日子，你需要准时到达学校参加考试。",
+      "type": "main",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_01_01_01",
+          "description": "与母亲对话",
+          "type": "talk",
+          "target": 1,
+          "current": 0,
+          "targetId": "mother"
+        },
+        {
+          "id": "obj_01_01_02",
+          "description": "到达忍者学校",
+          "type": "completeStory",
+          "target": 1,
+          "current": 0,
+          "targetId": "chapter_01"
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 500
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 100
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 1
+    },
+    {
+      "questId": "main_01_02",
+      "title": "入学考试",
+      "description": "参加忍者学校的入学考试，展示你的基础知识。",
+      "type": "main",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_01_02_01",
+          "description": "完成基础体能测试",
+          "type": "train",
+          "target": 3,
+          "current": 0
+        },
+        {
+          "id": "obj_01_02_02",
+          "description": "通过理论考试",
+          "type": "completeStory",
+          "target": 1,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 800
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 200
+        },
+        {
+          "name": "体术提升",
+          "type": "attribute",
+          "amount": 5,
+          "attributes": {
+            "taijutsu": 5
+          }
+        }
+      ],
+      "levelRequirement": 2,
+      "prerequisiteQuests": ["main_01_01"],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 2
+    },
+    {
+      "questId": "side_01_01",
+      "title": "帮助邻居",
+      "description": "邻居阿姨需要帮忙搬运一些杂物。",
+      "type": "side",
+      "status": "available",
+      "objectives": [
+        {
+          "id": "obj_side_01_01",
+          "description": "帮邻居搬运3箱杂物",
+          "type": "collect",
+          "target": 3,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 100
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 50
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 1
+    },
+    {
+      "questId": "side_01_02",
+      "title": "寻找失物",
+      "description": "在公园玩耍的小朋友丢失了他的玩具，帮他找回来吧。",
+      "type": "side",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_side_01_02",
+          "description": "找到丢失的玩具",
+          "type": "collect",
+          "target": 1,
+          "current": 0,
+          "targetId": "toy"
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 150
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 75
+        },
+        {
+          "name": "零食",
+          "type": "item",
+          "amount": 3,
+          "id": "snack"
+        }
+      ],
+      "levelRequirement": 2,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 2
+    },
+    {
+      "questId": "side_01_03",
+      "title": "体术训练",
+      "description": "每天进行体术训练，提升身体素质。",
+      "type": "side",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_side_01_03",
+          "description": "完成5组俯卧撑",
+          "type": "train",
+          "target": 5,
+          "current": 0
+        },
+        {
+          "id": "obj_side_01_04",
+          "description": "完成5组跑步",
+          "type": "train",
+          "target": 5,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 100
+        },
+        {
+          "name": "体术提升",
+          "type": "attribute",
+          "amount": 2,
+          "attributes": {
+            "taijutsu": 2,
+            "chakra": 2
+          }
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": ["main_01_01"],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 3
+    },
+    {
+      "questId": "daily_01_01",
+      "title": "晨间修炼",
+      "description": "每天早晨进行修炼，积累查克拉。",
+      "type": "daily",
+      "status": "available",
+      "objectives": [
+        {
+          "id": "obj_daily_01_01",
+          "description": "修炼查克拉1次",
+          "type": "train",
+          "target": 1,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 50
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 30
+        },
+        {
+          "name": "查克拉提升",
+          "type": "attribute",
+          "amount": 1,
+          "attributes": {
+            "chakra": 1
+          }
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 1
+    },
+    {
+      "questId": "daily_01_02",
+      "title": "日常任务：打水",
+      "description": "帮助村里打水，锻炼臂力。",
+      "type": "daily",
+      "status": "available",
+      "objectives": [
+        {
+          "id": "obj_daily_01_02",
+          "description": "打5桶水",
+          "type": "collect",
+          "target": 5,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "银两",
+          "type": "currency",
+          "amount": 80
+        },
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 40
+        },
+        {
+          "name": "体术提升",
+          "type": "attribute",
+          "amount": 1,
+          "attributes": {
+            "taijutsu": 1
+          }
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 2
+    },
+    {
+      "questId": "daily_01_03",
+      "title": "阅读忍术书籍",
+      "description": "阅读忍术基础知识，提升理论水平。",
+      "type": "daily",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_daily_01_03",
+          "description": "阅读3页忍术书籍",
+          "type": "train",
+          "target": 3,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 60
+        },
+        {
+          "name": "智力提升",
+          "type": "attribute",
+          "amount": 1,
+          "attributes": {
+            "intelligence": 1
+          }
+        }
+      ],
+      "levelRequirement": 2,
+      "prerequisiteQuests": ["main_01_01"],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 3
+    },
+    {
+      "questId": "daily_01_04",
+      "title": "基础体术练习",
+      "description": "进行基础体术练习，保持身体状态。",
+      "type": "daily",
+      "status": "locked",
+      "objectives": [
+        {
+          "id": "obj_daily_01_04",
+          "description": "完成基础体术练习",
+          "type": "train",
+          "target": 1,
+          "current": 0
+        }
+      ],
+      "rewards": [
+        {
+          "name": "经验值",
+          "type": "experience",
+          "amount": 50
+        },
+        {
+          "name": "体术提升",
+          "type": "attribute",
+          "amount": 1,
+          "attributes": {
+            "taijutsu": 1
+          }
+        }
+      ],
+      "levelRequirement": 1,
+      "prerequisiteQuests": [],
+      "startTime": null,
+      "endTime": null,
+      "completedTime": null,
+      "sortOrder": 4
+    }
+  ]
+}
