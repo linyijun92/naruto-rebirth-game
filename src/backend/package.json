@@ -4,8 +4,9 @@
   "description": "Naruto Rebirth Game Backend with Supabase",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node src/index.ts",
+    "start": "ts-node src/index.ts",
     "dev": "ts-node src/index.ts",
+    "build": "tsc",
     "test": "jest",
     "lint": "eslint . --ext .ts"
   },

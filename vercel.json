@@ -1,7 +1,6 @@
 {
   "name": "naruto-rebirth-game",
   "version": 2,
-  "buildCommand": "cd src/backend && npm install && npx tsc",
   "builds": [
     {
       "src": "src/backend/src/index.ts",
@@ -15,12 +14,7 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "src/backend/src/**/*.ts": {
-      "maxDuration": 10,
-      "memory": 512
-    }
+    "NODE_ENV": "production",
+    "VERCEL": "1"
   }
 }

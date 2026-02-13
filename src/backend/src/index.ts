@@ -125,8 +125,11 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-// 启动服务器
-startServer();
+// Vercel 无服务器环境不启动服务器
+// 本地开发环境才启动服务器
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  startServer();
+}
 
-// 导出 app 用于测试
+// 导出 app 用于 Vercel 部署
 export default app;
