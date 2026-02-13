@@ -6,7 +6,9 @@ import 'config/app_config.dart';
 import 'providers/game_provider.dart';
 import 'providers/player_provider.dart';
 import 'providers/save_provider.dart';
+import 'providers/navigation_provider.dart';
 import 'services/hive_service.dart';
+import 'screens/settings/settings_screen.dart';
 
 void main() async {
   // 确保Flutter绑定初始化
@@ -28,16 +30,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GameProvider()),
         ChangeNotifierProvider(create: (_) => PlayerProvider()),
         ChangeNotifierProvider(create: (_) => SaveProvider()),
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
       ],
-      child: MaterialApp(
-        title: AppConfig.appName,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
-          useMaterial3: true,
-        ),
-        home: const App(),
-      ),
+      child: const App(),
     );
   }
 }
