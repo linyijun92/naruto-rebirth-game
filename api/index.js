@@ -25,6 +25,26 @@ const sendJson = (res, statusCode, data) => {
   res.end(JSON.stringify(data));
 };
 
+// Helper function to extract player ID from Authorization header
+const getPlayerIdFromToken = (req) => {
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.substring(7); // Remove "Bearer " prefix
+
+  // Mock token format: "mock-jwt-token-<player_id>"
+  if (token.startsWith('mock-jwt-token-')) {
+    return token.substring(16); // Extract player_id from "mock-jwt-token-"
+  }
+
+  // If using real JWT, you would decode the token here
+  // For now, we'll just return null
+  return null;
+};
+
 // Player registration
 const registerPlayer = async (req, res) => {
   try {
@@ -65,8 +85,8 @@ const registerPlayer = async (req, res) => {
         level: 1,
         experience: 0,
         experience_to_next_level: 100,
-        currency: 100,  // 初始货币
-        attribute_points: 10  // 初始属性点数
+        currency: 100,  // Initial currency
+        attribute_points: 10  // Initial attribute points
       }])
       .select()
       .single();
@@ -185,7 +205,7 @@ const getPlayer = async (req, res) => {
   }
 };
 
-// ==================== 新增的 API 端点函数 ====================
+// ==================== 新增的 API 端点函数（已修复） ====================
 
 // 加载存档
 const loadSave = async (req, res) => {
@@ -197,6 +217,15 @@ const loadSave = async (req, res) => {
       return sendJson(res, 400, {
         success: false,
         error: 'Save ID is required'
+      });
+    }
+
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
+    if (!playerId) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'Unauthorized'
       });
     }
 
@@ -215,7 +244,7 @@ const loadSave = async (req, res) => {
     }
 
     // 验证存档所有权
-    if (save.player_id !== gameState.player?.id) {
+    if (save.player_id !== playerId) {
       return sendJson(res, 403, {
         success: false,
         error: 'You do not have permission to load this save'
@@ -225,7 +254,6 @@ const loadSave = async (req, res) => {
     // 构建返回数据
     const saveData = {
       saveName: save.save_name,
-      playerData: gameState.player,
       saveData: save.save_data,
       createdAt: save.created_at,
       updatedAt: save.updated_at
@@ -260,8 +288,8 @@ const createSave = async (req, res) => {
       });
     }
 
-    // 验证玩家身份
-    const playerId = gameState.player?.id;
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -311,6 +339,15 @@ const deleteSave = async (req, res) => {
       });
     }
 
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
+    if (!playerId) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+
     // 获取存档信息以验证所有权
     const { data: save, error } = await supabase
       .from('saves')
@@ -326,7 +363,7 @@ const deleteSave = async (req, res) => {
     }
 
     // 验证所有权
-    if (save.player_id !== gameState.player?.id) {
+    if (save.player_id !== playerId) {
       return sendJson(res, 403, {
         success: false,
         error: 'You do not have permission to delete this save'
@@ -357,7 +394,8 @@ const deleteSave = async (req, res) => {
 // 获取存档列表
 const getSaves = async (req, res) => {
   try {
-    const playerId = gameState.player?.id;
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -399,6 +437,15 @@ const completeQuest = async (req, res) => {
       return sendJson(res, 400, {
         success: false,
         error: 'Quest ID is required'
+      });
+    }
+
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
+    if (!playerId) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'Unauthorized'
       });
     }
 
@@ -450,15 +497,6 @@ const completeQuest = async (req, res) => {
     };
 
     // 更新玩家数据
-    const playerId = gameState.player?.id;
-    if (!playerId) {
-      return sendJson(res, 401, {
-        success: false,
-        error: 'Unauthorized'
-      });
-    }
-
-    // 更新货币
     if (rewards.currency > 0) {
       await supabase
         .from('players')
@@ -468,7 +506,6 @@ const completeQuest = async (req, res) => {
         .eq('id', playerId);
     }
 
-    // 更新经验值
     if (rewards.experience > 0) {
       await supabase
         .from('players')
@@ -521,10 +558,6 @@ const completeQuest = async (req, res) => {
           currency: rewards.currency,
           experience: rewards.experience,
           description: `获得 ${rewards.currency} 货币和 ${rewards.experience} 经验值`
-        },
-        player: {
-          currency: gameState.player.currency + rewards.currency,
-          experience: gameState.player.experience + rewards.experience
         }
       },
       message: '任务完成'
@@ -548,6 +581,15 @@ const claimQuestReward = async (req, res) => {
       return sendJson(res, 400, {
         success: false,
         error: 'Quest ID is required'
+      });
+    }
+
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
+    if (!playerId) {
+      return sendJson(res, 401, {
+        success: false,
+        error: 'Unauthorized'
       });
     }
 
@@ -591,14 +633,6 @@ const claimQuestReward = async (req, res) => {
     };
 
     // 更新玩家货币
-    const playerId = gameState.player?.id;
-    if (!playerId) {
-      return sendJson(res, 401, {
-        success: false,
-        error: 'Unauthorized'
-      });
-    }
-
     if (rewards.currency > 0) {
       await supabase
         .from('players')
@@ -612,11 +646,8 @@ const claimQuestReward = async (req, res) => {
       success: true,
       data: {
         rewards,
-        player: {
-          currency: gameState.player.currency + rewards.currency
-        }
-      },
-      message: '奖励领取成功'
+        message: '奖励领取成功'
+      }
     });
   } catch (error) {
     console.error('Claim quest reward error:', error);
@@ -681,7 +712,8 @@ const upgradeAttribute = async (req, res) => {
       });
     }
 
-    const playerId = gameState.player?.id;
+    // Extract player ID from token
+    const playerId = getPlayerIdFromToken(req);
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -856,7 +888,7 @@ module.exports = async (req, res) => {
     return getPlayer(req, res);
   }
 
-  // ==================== 新增的路由处理 ====================
+  // ==================== 新增的路由处理（已修复） ====================
 
   // Load save
   if (path.startsWith('/saves/') && path.endsWith('/load') && method === 'POST') {
@@ -910,7 +942,7 @@ module.exports = async (req, res) => {
   if (path === '/' || path === '') {
     return sendJson(res, 200, {
       message: 'Naruto Rebirth Game API',
-      version: '1.0.0',
+      version: '1.0.1', // Updated version
       timestamp: new Date().toISOString(),
       endpoints: [
         { method: 'GET', path: '/health' },
