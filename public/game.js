@@ -246,23 +246,102 @@ function loadAttributes() {
 
   const attrs = gameState.player.player_attributes[0];
   gameState.attributes = attrs;
+  const attributePoints = gameState.player.attribute_points || 0;
 
-  // 更新属性 UI
-  updateAttributeUI('chakra', attrs.chakra);
-  updateAttributeUI('ninjutsu', attrs.ninjutsu);
-  updateAttributeUI('taijutsu', attrs.taijutsu);
-  updateAttributeUI('intelligence', attrs.intelligence);
-  updateAttributeUI('speed', attrs.speed);
-  updateAttributeUI('luck', attrs.luck);
+  // 更新属性 UI，添加提升按钮
+  updateAttributeUI('chakra', attrs.chakra, attributePoints);
+  updateAttributeUI('ninjutsu', attrs.ninjutsu, attributePoints);
+  updateAttributeUI('taijutsu', attrs.taijutsu, attributePoints);
+  updateAttributeUI('intelligence', attrs.intelligence, attributePoints);
+  updateAttributeUI('speed', attrs.speed, attributePoints);
+  updateAttributeUI('luck', attrs.luck, attributePoints);
 }
 
 // 更新单个属性 UI
-function updateAttributeUI(attrName, value) {
+function updateAttributeUI(attrName, value, availablePoints = 0) {
   const attrElement = elements[`attr${capitalize(attrName)}`];
   const barElement = elements[`bar${capitalize(attrName)}`];
+  const container = attrElement ? attrElement.parentElement : null;
 
   if (attrElement) attrElement.textContent = value;
   if (barElement) barElement.style.width = `${value}%`;
+
+  // 添加提升按钮
+  if (container) {
+    // 移除旧的提升按钮
+    const oldUpgradeBtn = container.querySelector('.upgrade-btn');
+    if (oldUpgradeBtn) {
+      oldUpgradeBtn.remove();
+    }
+
+    // 添加新的提升按钮
+    const upgradeBtn = document.createElement('button');
+    upgradeBtn.className = 'upgrade-btn';
+    upgradeBtn.textContent = `提升 (1点)`;
+
+    // 计算是否可以提升
+    const canUpgrade = value < 100 && availablePoints > 0;
+    if (!canUpgrade) {
+      upgradeBtn.classList.add('disabled');
+      if (value >= 100) {
+        upgradeBtn.textContent = '已满级';
+      } else if (availablePoints <= 0) {
+        upgradeBtn.textContent = '属性点不足';
+      }
+    }
+
+    upgradeBtn.addEventListener('click', () => {
+      upgradeAttribute(attrName, availablePoints);
+    });
+
+    container.appendChild(upgradeBtn);
+  }
+}
+
+// 升级属性
+async function upgradeAttribute(attrName, availablePoints) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/player/upgrade`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${gameState.token}`
+      },
+      body: JSON.stringify({
+        attribute: attrName,
+        amount: 1
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 更新玩家数据
+      const upgrade = result.data.upgrade;
+      gameState.player = result.data.player;
+      gameState.player.attribute_points = upgrade.newAttributePoints;
+
+      // 更新属性
+      const attrIndex = ['chakra', 'ninjutsu', 'taijutsu', 'intelligence', 'speed', 'luck'].indexOf(attrName);
+      if (attrIndex !== -1) {
+        gameState.player.player_attributes[0][attrName] += upgrade.increase;
+      }
+
+      // 持久化
+      localStorage.setItem('player', JSON.stringify(gameState.player));
+
+      // 更新 UI
+      updatePlayerUI();
+      loadAttributes();
+
+      alert(`${capitalize(attrName)} 升级成功！从 ${upgrade.oldValue} 提升到 ${upgrade.newValue}`);
+    } else {
+      alert(`属性升级失败：${result.message || '未知错误'}`);
+    }
+  } catch (error) {
+    console.error('Upgrade attribute error:', error);
+    alert(`属性升级失败：${error.message || '网络错误，请稍后重试'}`);
+  }
 }
 
 // 首字母大写
@@ -324,8 +403,29 @@ function loadScreenData(screen) {
 }
 
 // 加载剧情
-function loadStory() {
-  // 模拟剧情数据
+async function loadStory() {
+  try {
+    // 尝试从 API 获取剧情数据（API 尚未实现，使用备用数据）
+    const response = await fetch(`${API_BASE_URL}/story/${gameState.currentChapter}`);
+    const result = await response.json();
+
+    if (result.code !== 501 && result.data) {
+      // TODO: 当 API 实现后，解析返回的剧情数据
+      console.log('Story API not yet implemented, using fallback data');
+      loadStoryFallback();
+    } else {
+      loadStoryFallback();
+    }
+  } catch (error) {
+    console.error('Load story error:', error);
+    console.warn('Using fallback story data due to API error');
+    loadStoryFallback();
+  }
+}
+
+// 加载剧情（备用数据）
+function loadStoryFallback() {
+  // 模拟剧情数据（API 实现前使用）
   const storyData = {
     chapter1: {
       node1: {
@@ -391,8 +491,33 @@ function typeWriter(text, element, index = 0) {
 }
 
 // 加载任务
-function loadQuests() {
-  // 模拟任务数据
+async function loadQuests() {
+  try {
+    // 尝试从 API 获取任务数据（API 尚未实现，使用备用数据）
+    const response = await fetch(`${API_BASE_URL}/quests`, {
+      headers: {
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
+    const result = await response.json();
+
+    if (result.code !== 501 && result.data) {
+      // TODO: 当 API 实现后，解析返回的任务数据
+      console.log('Quests API not yet implemented, using fallback data');
+      loadQuestsFallback();
+    } else {
+      loadQuestsFallback();
+    }
+  } catch (error) {
+    console.error('Load quests error:', error);
+    console.warn('Using fallback quests data due to API error');
+    loadQuestsFallback();
+  }
+}
+
+// 加载任务（备用数据）
+function loadQuestsFallback() {
+  // 模拟任务数据（API 实现前使用）
   const quests = [
     {
       id: 1,
@@ -435,9 +560,25 @@ function loadQuests() {
 function displayQuests(quests) {
   elements.questList.innerHTML = '';
 
+  if (!quests || quests.length === 0) {
+    elements.questList.innerHTML = '<p>暂无任务</p>';
+    return;
+  }
+
   quests.forEach(quest => {
     const card = document.createElement('div');
     card.className = 'quest-card';
+
+    // 根据任务状态显示不同按钮
+    let actionButton = '';
+    if (quest.status === 'in_progress') {
+      actionButton = `<button class="quest-btn complete-btn" data-quest-id="${quest.id}">完成任务</button>`;
+    } else if (quest.status === 'completed' && !quest.claimed) {
+      actionButton = `<button class="quest-btn claim-btn" data-quest-id="${quest.id}">领取奖励</button>`;
+    } else if (quest.status === 'completed' && quest.claimed) {
+      actionButton = `<button class="quest-btn" disabled>已领取</button>`;
+    }
+
     card.innerHTML = `
       <h3>${quest.title}</h3>
       <p>${quest.description}</p>
@@ -445,8 +586,22 @@ function displayQuests(quests) {
         <span>奖励: ${quest.rewards}</span>
         <span>状态: ${getQuestStatusText(quest.status)}</span>
       </div>
+      ${actionButton}
     `;
+
     elements.questList.appendChild(card);
+
+    // 绑定按钮事件
+    const completeBtn = card.querySelector('.complete-btn');
+    const claimBtn = card.querySelector('.claim-btn');
+
+    if (completeBtn) {
+      completeBtn.addEventListener('click', () => completeQuest(quest.id));
+    }
+
+    if (claimBtn) {
+      claimBtn.addEventListener('click', () => claimQuestReward(quest.id));
+    }
   });
 }
 
@@ -460,6 +615,89 @@ function getQuestStatusText(status) {
   return statusMap[status] || status;
 }
 
+// 完成任务
+async function completeQuest(questId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/quest/${questId}/complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 更新玩家数据
+      const rewards = result.data.rewards;
+      gameState.player = result.data.player;
+      gameState.player.currency = rewards.currency;
+      gameState.player.experience = rewards.experience;
+
+      // 更新属性
+      if (rewards.attributeIncrease) {
+        gameState.player.player_attributes[0][rewards.attribute] += rewards.amount;
+      }
+
+      // 持久化
+      localStorage.setItem('player', JSON.stringify(gameState.player));
+
+      // 更新 UI
+      updatePlayerUI();
+      loadAttributes();
+
+      // 重新加载任务
+      loadQuests();
+
+      alert(`任务完成！获得：${rewards.description || '无'}`);
+    } else {
+      alert(`任务完成失败：${result.message || '未知错误'}`);
+    }
+  } catch (error) {
+    console.error('Complete quest error:', error);
+    alert(`任务完成失败：${error.message || '网络错误，请稍后重试'}`);
+  }
+}
+
+// 领取奖励
+async function claimQuestReward(questId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/quest/${questId}/claim`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 更新玩家数据
+      const rewards = result.data.rewards;
+      gameState.player = result.data.player;
+      gameState.player.currency = rewards.currency;
+
+      // 持久化
+      localStorage.setItem('player', JSON.stringify(gameState.player));
+
+      // 更新 UI
+      updatePlayerUI();
+
+      // 重新加载任务
+      loadQuests();
+
+      alert(`奖励领取成功！获得：${rewards.description || '无'}`);
+    } else {
+      alert(`奖励领取失败：${result.message || '未知错误'}`);
+    }
+  } catch (error) {
+    console.error('Claim reward error:', error);
+    alert(`奖励领取失败：${error.message || '网络错误，请稍后重试'}`);
+  }
+}
+
 // 任务标签页切换
 elements.questTabs.forEach(tab => {
   tab.addEventListener('click', () => {
@@ -470,46 +708,70 @@ elements.questTabs.forEach(tab => {
 });
 
 // 加载商店
-function loadShop() {
-  // 模拟商品数据
+async function loadShop() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/shop/items`, {
+      headers: {
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
+
+    const result = await response.json();
+
+    if (result.success && result.data && result.data.items) {
+      displayShopItems(result.data.items);
+    } else {
+      console.warn('Failed to load shop items from API, using fallback data');
+      loadShopFallback();
+    }
+  } catch (error) {
+    console.error('Load shop error:', error);
+    console.warn('Using fallback shop data due to API error');
+    loadShopFallback();
+  }
+}
+
+// 加载商店（备用数据）
+function loadShopFallback() {
+  // 模拟商品数据（仅当 API 失败时使用）
   const items = [
     {
-      id: 1,
+      itemId: 1,
       name: '苦无',
       price: 100,
       rarity: 'N',
       description: '基础忍者武器，提升忍术攻击力'
     },
     {
-      id: 2,
+      itemId: 2,
       name: '手里剑',
       price: 200,
       rarity: 'R',
       description: '进阶忍者武器，大幅提升忍术攻击力'
     },
     {
-      id: 3,
+      itemId: 3,
       name: '查克拉药水',
       price: 50,
       rarity: 'N',
       description: '恢复查克拉，提升战斗续航能力'
     },
     {
-      id: 4,
+      itemId: 4,
       name: '血瓶',
       price: 50,
       rarity: 'N',
       description: '恢复生命值，提升生存能力'
     },
     {
-      id: 5,
+      itemId: 5,
       name: '秘技卷轴',
       price: 500,
       rarity: 'SR',
       description: '学习高级忍术，大幅提升战斗力'
     },
     {
-      id: 6,
+      itemId: 6,
       name: '影级武器',
       price: 2000,
       rarity: 'SSR',
@@ -524,6 +786,11 @@ function loadShop() {
 function displayShopItems(items) {
   elements.shopItems.innerHTML = '';
 
+  if (!items || items.length === 0) {
+    elements.shopItems.innerHTML = '<p>暂无商品</p>';
+    return;
+  }
+
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -531,8 +798,8 @@ function displayShopItems(items) {
       <div class="item-rarity rarity-${item.rarity}">${item.rarity}</div>
       <div class="item-name">${item.name}</div>
       <div class="item-price">💰 ${item.price}</div>
-      <p class="item-description">${item.description}</p>
-      <button class="buy-btn" ${gameState.player.currency < item.price ? 'disabled' : ''}>
+      <p class="item-description">${item.description || item.effect || ''}</p>
+      <button class="buy-btn" data-item-id="${item.itemId || item.id}" ${gameState.player.currency < item.price ? 'disabled' : ''}>
         购买
       </button>
     `;
@@ -545,40 +812,75 @@ function displayShopItems(items) {
 }
 
 // 购买物品
-function buyItem(item) {
+async function buyItem(item) {
   if (gameState.player.currency < item.price) {
     alert('货币不足！');
     return;
   }
 
   if (confirm(`确定购买 ${item.name} 吗？价格：${item.price} 货币`)) {
-    gameState.player.currency -= item.price;
-    updatePlayerUI();
-    alert(`成功购买 ${item.name}！`);
-    loadShop(); // 重新加载商店，更新按钮状态
+    try {
+      const itemId = item.itemId || item.id;
+      const response = await fetch(`${API_BASE_URL}/shop/purchase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${gameState.token}`
+        },
+        body: JSON.stringify({
+          itemId: itemId,
+          quantity: 1
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // 更新本地玩家数据
+        gameState.player.currency = result.data.gold;
+        localStorage.setItem('player', JSON.stringify(gameState.player));
+        updatePlayerUI();
+        alert(`成功购买 ${item.name}！`);
+        loadShop(); // 重新加载商店，更新按钮状态
+      } else {
+        alert(`购买失败：${result.message || '未知错误'}`);
+      }
+    } catch (error) {
+      console.error('Purchase error:', error);
+      alert('购买失败，请稍后重试');
+    }
   }
 }
 
 // 加载存档
-function loadSaves() {
-  // 模拟存档数据
-  const saves = [
-    {
-      id: 1,
-      name: '自动存档 1',
-      time: '2026-02-14 08:30:00',
-      chapter: '第一章 - 觉醒'
-    }
-  ];
+async function loadSaves() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/saves`, {
+      headers: {
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
 
-  displaySaves(saves);
+    const result = await response.json();
+
+    if (result.code === 200 && result.data && result.data.saves) {
+      displaySaves(result.data.saves);
+    } else {
+      console.warn('Failed to load saves from API, using fallback data');
+      displaySaves([]);
+    }
+  } catch (error) {
+    console.error('Load saves error:', error);
+    console.warn('No saves loaded due to API error');
+    displaySaves([]);
+  }
 }
 
 // 显示存档
 function displaySaves(saves) {
   elements.saveList.innerHTML = '';
 
-  if (saves.length === 0) {
+  if (!saves || saves.length === 0) {
     elements.saveList.innerHTML = '<p>暂无存档</p>';
     return;
   }
@@ -586,33 +888,161 @@ function displaySaves(saves) {
   saves.forEach(save => {
     const card = document.createElement('div');
     card.className = 'save-card';
+
+    // 格式化时间
+    const updatedAt = save.updatedAt ? new Date(save.updatedAt).toLocaleString() : '未知时间';
+    const chapterName = save.currentChapter || '未知章节';
+    const playerLevel = save.playerLevel || 1;
+
     card.innerHTML = `
       <div>
-        <h3>${save.name}</h3>
-        <p>${save.time}</p>
-        <p>${save.chapter}</p>
+        <h3>${save.saveName || '未命名存档'}</h3>
+        <p>时间：${updatedAt}</p>
+        <p>章节：${chapterName}</p>
+        <p>等级：Lv.${playerLevel}</p>
       </div>
       <div class="save-actions">
-        <button>加载</button>
-        <button>删除</button>
+        <button class="load-save-btn" data-save-id="${save.saveId}">加载</button>
+        <button class="delete-save-btn" data-save-id="${save.saveId}">删除</button>
       </div>
     `;
+
+    // 加载按钮事件
+    const loadBtn = card.querySelector('.load-save-btn');
+    loadBtn.addEventListener('click', () => loadSave(save));
+
+    // 删除按钮事件
+    const deleteBtn = card.querySelector('.delete-save-btn');
+    deleteBtn.addEventListener('click', () => deleteSave(save.saveId));
+
     elements.saveList.appendChild(card);
   });
 }
 
 // 创建存档
+async function createSave(saveName) {
+  try {
+    const saveData = {
+      saveName: saveName || `自动存档 ${new Date().toLocaleString()}`,
+      playerLevel: gameState.player.level,
+      attributes: gameState.attributes,
+      currentChapter: gameState.currentChapter,
+      playTime: 0 // TODO: 添加实际的游玩时间跟踪
+    };
+
+    const response = await fetch(`${API_BASE_URL}/saves`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${gameState.token}`
+      },
+      body: JSON.stringify(saveData)
+    });
+
+    const result = await response.json();
+
+    if (result.code === 201) {
+      alert(`存档创建成功：${saveName}`);
+      loadSaves();
+    } else {
+      alert(`存档创建失败：${result.message || '未知错误'}`);
+    }
+  } catch (error) {
+    console.error('Create save error:', error);
+    alert('存档创建失败，请稍后重试');
+  }
+}
+
+// 加载存档
+async function loadSave(save) {
+  try {
+    // 1. 确认加载
+    if (!confirm(`确定加载存档 "${save.saveName}" 吗？当前进度将被覆盖。`)) {
+      return;
+    }
+
+    // 2. 调用加载存档 API
+    const response = await fetch(`${API_BASE_URL}/saves/${save.saveId}/load`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${gameState.token}`
+      }
+    });
+
+    const result = await response.json();
+
+    // 3. 检查结果
+    if (result.success) {
+      // 4. 更新玩家数据
+      const saveData = result.data.saveData;
+      gameState.player = saveData.playerData;
+      gameState.currentChapter = saveData.currentChapter;
+      gameState.currentNode = saveData.currentNode;
+      gameState.attributes = saveData.attributes;
+
+      // 5. 持久化到 localStorage
+      localStorage.setItem('player', JSON.stringify(gameState.player));
+      localStorage.setItem('currentChapter', gameState.currentChapter);
+      localStorage.setItem('currentNode', gameState.currentNode);
+      if (gameState.attributes) {
+        localStorage.setItem('attributes', JSON.stringify(gameState.attributes));
+      }
+
+      // 6. 更新所有 UI
+      updatePlayerUI();
+      loadAttributes();
+      loadStory();
+      loadQuests();
+
+      // 7. 显示成功提示
+      alert(`存档 "${save.saveName}" 加载成功！`);
+    } else {
+      alert(`加载存档失败：${result.message || '未知错误'}`);
+    }
+  } catch (error) {
+    console.error('Load save error:', error);
+    alert(`加载存档失败：${error.message || '网络错误，请稍后重试'}`);
+  }
+}
+
+// 删除存档
+async function deleteSave(saveId) {
+  if (confirm('确定删除该存档吗？此操作不可恢复。')) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/saves/${saveId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${gameState.token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.code === 200) {
+        alert('存档删除成功');
+        loadSaves();
+      } else {
+        alert(`存档删除失败：${result.message || '未知错误'}`);
+      }
+    } catch (error) {
+      console.error('Delete save error:', error);
+      alert('存档删除失败，请稍后重试');
+    }
+  }
+}
+
+// 创建存档按钮事件
 elements.createSaveBtn.addEventListener('click', () => {
   const saveName = prompt('请输入存档名称：', `自动存档 ${new Date().toLocaleTimeString()}`);
   if (saveName) {
-    alert(`创建存档：${saveName}`);
-    loadSaves();
+    createSave(saveName);
   }
 });
 
-// 加载存档
+// 加载存档按钮事件（预留）
 elements.loadSaveBtn.addEventListener('click', () => {
-  alert('加载存档功能开发中...');
+  alert('请从存档列表中选择要加载的存档');
 });
 
 console.log('游戏已加载！');

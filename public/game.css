@@ -576,3 +576,58 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* 任务按钮样式 */
+.quest-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.875rem;
+}
+
+.quest-btn:hover:not(:disabled) {
+  background: var(--accent-color);
+}
+
+.quest-btn:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.quest-btn.claim-btn {
+  background: #4CAF50;
+}
+
+.quest-btn.claim-btn:hover:not(:disabled) {
+  background: #45a049;
+}
+
+/* 属性提升按钮样式 */
+.upgrade-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.upgrade-btn:hover:not(.disabled) {
+  background: var(--accent-color);
+}
+
+.upgrade-btn.disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
