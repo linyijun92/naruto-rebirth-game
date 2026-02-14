@@ -4,6 +4,18 @@
     {
       "source": "/api/:path*",
       "destination": "/api"
+    },
+    {
+      "source": "/",
+      "destination": "/api/public"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/api/public"
+    },
+    {
+      "source": "/favicon.png",
+      "destination": "/api/public"
     }
   ]
 }
