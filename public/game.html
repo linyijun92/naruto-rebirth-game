@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重生到火影忍者世界</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <!-- 登录/注册界面 -->
+  <div id="auth-screen" class="screen">
+    <div class="auth-container">
+      <h1>🎮 重生到火影忍者世界</h1>
+      <p>Naruto Rebirth Game</p>
+
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">登录</button>
+        <button class="tab-btn" data-tab="register">注册</button>
+      </div>
+
+      <form id="login-form" class="auth-form active">
+        <div class="form-group">
+          <label for="login-username">用户名</label>
+          <input type="text" id="login-username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">密码</label>
+          <input type="password" id="login-password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">登录</button>
+      </form>
+
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label for="register-username">用户名</label>
+          <input type="text" id="register-username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="register-email">邮箱</label>
+          <input type="email" id="register-email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label for="register-password">密码</label>
+          <input type="password" id="register-password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">注册</button>
+      </form>
+
+      <div id="auth-message" class="message"></div>
+    </div>
+  </div>
+
+  <!-- 游戏主界面 -->
+  <div id="game-screen" class="screen hidden">
+    <!-- 顶部导航栏 -->
+    <header class="game-header">
+      <h1 class="game-title">🎮 重生到火影忍者世界</h1>
+      <div class="player-info">
+        <span id="player-name">-</span>
+        <span id="player-level">Lv.1</span>
+        <span id="player-currency">💰 0</span>
+      </div>
+      <button id="logout-btn" class="btn btn-small">退出</button>
+    </header>
+
+    <div class="game-container">
+      <!-- 左侧菜单 -->
+      <aside class="sidebar">
+        <nav class="nav-menu">
+          <button class="nav-item active" data-screen="story">📖 剧情</button>
+          <button class="nav-item" data-screen="attributes">⚡ 属性</button>
+          <button class="nav-item" data-screen="quests">📋 任务</button>
+          <button class="nav-item" data-screen="shop">🛍️ 商店</button>
+          <button class="nav-item" data-screen="saves">💾 存档</button>
+        </nav>
+      </aside>
+
+      <!-- 主内容区 -->
+      <main class="game-content">
+        <!-- 剧情界面 -->
+        <section id="story-screen" class="content-screen active">
+          <div class="story-container">
+            <div id="story-text" class="story-text"></div>
+            <div id="story-choices" class="story-choices"></div>
+          </div>
+        </section>
+
+        <!-- 属性界面 -->
+        <section id="attributes-screen" class="content-screen">
+          <h2>玩家属性</h2>
+          <div class="attributes-grid">
+            <div class="attribute-card">
+              <div class="attribute-name">🔥 查克拉</div>
+              <div class="attribute-value" id="attr-chakra">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-chakra"></div>
+              </div>
+            </div>
+            <div class="attribute-card">
+              <div class="attribute-name">🥷️ 忍术</div>
+              <div class="attribute-value" id="attr-ninjutsu">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-ninjutsu"></div>
+              </div>
+            </div>
+            <div class="attribute-card">
+              <div class="attribute-name">💪 体术</div>
+              <div class="attribute-value" id="attr-taijutsu">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-taijutsu"></div>
+              </div>
+            </div>
+            <div class="attribute-card">
+              <div class="attribute-name">🧠 智力</div>
+              <div class="attribute-value" id="attr-intelligence">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-intelligence"></div>
+              </div>
+            </div>
+            <div class="attribute-card">
+              <div class="attribute-name">⚡ 速度</div>
+              <div class="attribute-value" id="attr-speed">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-speed"></div>
+              </div>
+            </div>
+            <div class="attribute-card">
+              <div class="attribute-name">🍀 运气</div>
+              <div class="attribute-value" id="attr-luck">-</div>
+              <div class="attribute-bar">
+                <div class="bar-fill" id="bar-luck"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 任务界面 -->
+        <section id="quests-screen" class="content-screen">
+          <h2>任务列表</h2>
+          <div class="quest-tabs">
+            <button class="quest-tab active" data-type="main">主线任务</button>
+            <button class="quest-tab" data-type="side">支线任务</button>
+            <button class="quest-tab" data-type="daily">日常任务</button>
+          </div>
+          <div id="quest-list" class="quest-list"></div>
+        </section>
+
+        <!-- 商店界面 -->
+        <section id="shop-screen" class="content-screen">
+          <h2>忍者商店</h2>
+          <div class="shop-header">
+            <span class="currency-display">💰 货币: <span id="shop-currency">0</span></span>
+          </div>
+          <div id="shop-items" class="shop-items"></div>
+        </section>
+
+        <!-- 存档界面 -->
+        <section id="saves-screen" class="content-screen">
+          <h2>存档管理</h2>
+          <div class="save-controls">
+            <button id="create-save-btn" class="btn btn-primary">创建新存档</button>
+            <button id="load-save-btn" class="btn btn-secondary">加载存档</button>
+          </div>
+          <div id="save-list" class="save-list"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
