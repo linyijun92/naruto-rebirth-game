@@ -205,13 +205,15 @@ const getPlayer = async (req, res) => {
   }
 };
 
-// ==================== 新增的 API 端点函数（已修复） ====================
+// ==================== 新增的 API 端点函数（已添加详细日志） ====================
 
 // 加载存档
 const loadSave = async (req, res) => {
   try {
     const { query } = req;
     const saveId = query.id || query.saveId;
+
+    console.log('[loadSave] Starting loadSave, saveId:', saveId);
 
     if (!saveId) {
       return sendJson(res, 400, {
@@ -222,6 +224,8 @@ const loadSave = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[loadSave] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -230,13 +234,20 @@ const loadSave = async (req, res) => {
     }
 
     // 从数据库加载存档数据
+    console.log('[loadSave] Querying saves table for saveId:', saveId);
     const { data: save, error } = await supabase
       .from('saves')
       .select('*')
       .eq('id', saveId)
       .single();
 
-    if (error || !save) {
+    if (error) {
+      console.error('[loadSave] Database query error:', error);
+      throw error;
+    }
+
+    if (!save) {
+      console.log('[loadSave] Save not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Save not found'
@@ -244,7 +255,9 @@ const loadSave = async (req, res) => {
     }
 
     // 验证存档所有权
+    console.log('[loadSave] Save player_id:', save.player_id, 'Player ID:', playerId);
     if (save.player_id !== playerId) {
+      console.log('[loadSave] Permission denied');
       return sendJson(res, 403, {
         success: false,
         error: 'You do not have permission to load this save'
@@ -259,6 +272,7 @@ const loadSave = async (req, res) => {
       updatedAt: save.updated_at
     };
 
+    console.log('[loadSave] Save loaded successfully:', saveData);
     sendJson(res, 200, {
       success: true,
       data: {
@@ -267,7 +281,8 @@ const loadSave = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Load save error:', error);
+    console.error('[loadSave] Error:', error);
+    console.error('[loadSave] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to load save'
@@ -281,6 +296,8 @@ const createSave = async (req, res) => {
     const body = await parseBody(req);
     const { saveName, saveData } = body;
 
+    console.log('[createSave] Starting createSave, saveName:', saveName);
+
     if (!saveName || !saveData) {
       return sendJson(res, 400, {
         success: false,
@@ -290,6 +307,8 @@ const createSave = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[createSave] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -298,6 +317,7 @@ const createSave = async (req, res) => {
     }
 
     // 创建存档记录
+    console.log('[createSave] Inserting save record');
     const { data: save, error } = await supabase
       .from('saves')
       .insert([{
@@ -310,15 +330,20 @@ const createSave = async (req, res) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[createSave] Database insert error:', error);
+      throw error;
+    }
 
+    console.log('[createSave] Save created successfully:', save);
     sendJson(res, 201, {
       success: true,
       data: save,
       message: '存档创建成功'
     });
   } catch (error) {
-    console.error('Create save error:', error);
+    console.error('[createSave] Error:', error);
+    console.error('[createSave] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to create save'
@@ -332,6 +357,8 @@ const deleteSave = async (req, res) => {
     const { query } = req;
     const saveId = query.id || query.saveId;
 
+    console.log('[deleteSave] Starting deleteSave, saveId:', saveId);
+
     if (!saveId) {
       return sendJson(res, 400, {
         success: false,
@@ -341,6 +368,8 @@ const deleteSave = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[deleteSave] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -349,6 +378,7 @@ const deleteSave = async (req, res) => {
     }
 
     // 获取存档信息以验证所有权
+    console.log('[deleteSave] Fetching save info');
     const { data: save, error } = await supabase
       .from('saves')
       .select('*')
@@ -356,6 +386,7 @@ const deleteSave = async (req, res) => {
       .single();
 
     if (error || !save) {
+      console.log('[deleteSave] Save not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Save not found'
@@ -363,7 +394,9 @@ const deleteSave = async (req, res) => {
     }
 
     // 验证所有权
+    console.log('[deleteSave] Save player_id:', save.player_id, 'Player ID:', playerId);
     if (save.player_id !== playerId) {
+      console.log('[deleteSave] Permission denied');
       return sendJson(res, 403, {
         success: false,
         error: 'You do not have permission to delete this save'
@@ -371,19 +404,25 @@ const deleteSave = async (req, res) => {
     }
 
     // 删除存档
+    console.log('[deleteSave] Deleting save');
     const { error: deleteError } = await supabase
       .from('saves')
       .delete()
       .eq('id', saveId);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error('[deleteSave] Database delete error:', deleteError);
+      throw deleteError;
+    }
 
+    console.log('[deleteSave] Save deleted successfully');
     sendJson(res, 200, {
       success: true,
       message: '存档删除成功'
     });
   } catch (error) {
-    console.error('Delete save error:', error);
+    console.error('[deleteSave] Error:', error);
+    console.error('[deleteSave] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to delete save'
@@ -394,8 +433,12 @@ const deleteSave = async (req, res) => {
 // 获取存档列表
 const getSaves = async (req, res) => {
   try {
+    console.log('[getSaves] Starting getSaves');
+
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[getSaves] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -403,6 +446,8 @@ const getSaves = async (req, res) => {
       });
     }
 
+    // 查询存档列表
+    console.log('[getSaves] Querying saves table for playerId:', playerId);
     const { data: saves, error } = await supabase
       .from('saves')
       .select('*')
@@ -410,8 +455,12 @@ const getSaves = async (req, res) => {
       .order('updated_at', { ascending: false })
       .limit(10);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[getSaves] Database query error:', error);
+      throw error;
+    }
 
+    console.log('[getSaves] Saves fetched successfully, count:', saves ? saves.length : 0);
     sendJson(res, 200, {
       success: true,
       data: {
@@ -419,7 +468,8 @@ const getSaves = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get saves error:', error);
+    console.error('[getSaves] Error:', error);
+    console.error('[getSaves] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to get saves'
@@ -433,6 +483,8 @@ const completeQuest = async (req, res) => {
     const { query } = req;
     const questId = query.id || query.questId;
 
+    console.log('[completeQuest] Starting completeQuest, questId:', questId);
+
     if (!questId) {
       return sendJson(res, 400, {
         success: false,
@@ -442,6 +494,8 @@ const completeQuest = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[completeQuest] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -450,6 +504,7 @@ const completeQuest = async (req, res) => {
     }
 
     // 获取任务信息
+    console.log('[completeQuest] Fetching quest info');
     const { data: quest, error } = await supabase
       .from('quests')
       .select('*')
@@ -457,6 +512,7 @@ const completeQuest = async (req, res) => {
       .single();
 
     if (error || !quest) {
+      console.log('[completeQuest] Quest not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Quest not found'
@@ -464,6 +520,7 @@ const completeQuest = async (req, res) => {
     }
 
     // 检查任务是否可以完成
+    console.log('[completeQuest] Quest status:', quest.status);
     if (quest.status !== 'available' && quest.status !== 'in_progress') {
       return sendJson(res, 400, {
         success: false,
@@ -472,6 +529,7 @@ const completeQuest = async (req, res) => {
     }
 
     // 更新任务状态为 completed
+    console.log('[completeQuest] Updating quest status');
     const { error: updateError } = await supabase
       .from('quests')
       .update({
@@ -480,7 +538,10 @@ const completeQuest = async (req, res) => {
       })
       .eq('id', questId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('[completeQuest] Database update error:', updateError);
+      throw updateError;
+    }
 
     // 解析奖励
     const rewards = {
@@ -551,6 +612,7 @@ const completeQuest = async (req, res) => {
       }
     }
 
+    console.log('[completeQuest] Quest completed successfully');
     sendJson(res, 200, {
       success: true,
       data: {
@@ -558,12 +620,17 @@ const completeQuest = async (req, res) => {
           currency: rewards.currency,
           experience: rewards.experience,
           description: `获得 ${rewards.currency} 货币和 ${rewards.experience} 经验值`
+        },
+        player: {
+          currency: 0,
+          experience: 0
         }
       },
       message: '任务完成'
     });
   } catch (error) {
-    console.error('Complete quest error:', error);
+    console.error('[completeQuest] Error:', error);
+    console.error('[completeQuest] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to complete quest'
@@ -577,6 +644,8 @@ const claimQuestReward = async (req, res) => {
     const { query } = req;
     const questId = query.id || query.questId;
 
+    console.log('[claimQuestReward] Starting claimQuestReward, questId:', questId);
+
     if (!questId) {
       return sendJson(res, 400, {
         success: false,
@@ -586,6 +655,8 @@ const claimQuestReward = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[claimQuestReward] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -594,6 +665,7 @@ const claimQuestReward = async (req, res) => {
     }
 
     // 获取任务信息
+    console.log('[claimQuestReward] Fetching quest info');
     const { data: quest, error } = await supabase
       .from('quests')
       .select('*')
@@ -601,6 +673,7 @@ const claimQuestReward = async (req, res) => {
       .single();
 
     if (error || !quest) {
+      console.log('[claimQuestReward] Quest not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Quest not found'
@@ -608,6 +681,7 @@ const claimQuestReward = async (req, res) => {
     }
 
     // 检查任务是否已完成且未领取
+    console.log('[claimQuestReward] Quest status:', quest.status, 'claimed:', quest.claimed);
     if (quest.status !== 'completed' || quest.claimed) {
       return sendJson(res, 400, {
         success: false,
@@ -616,6 +690,7 @@ const claimQuestReward = async (req, res) => {
     }
 
     // 标记为已领取
+    console.log('[claimQuestReward] Marking quest as claimed');
     const { error: updateError } = await supabase
       .from('quests')
       .update({
@@ -624,7 +699,10 @@ const claimQuestReward = async (req, res) => {
       })
       .eq('id', questId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('[claimQuestReward] Database update error:', updateError);
+      throw updateError;
+    }
 
     // 解析奖励
     const rewards = {
@@ -642,15 +720,20 @@ const claimQuestReward = async (req, res) => {
         .eq('id', playerId);
     }
 
+    console.log('[claimQuestReward] Reward claimed successfully');
     sendJson(res, 200, {
       success: true,
       data: {
         rewards,
-        message: '奖励领取成功'
-      }
+        player: {
+          currency: 0
+        }
+      },
+      message: '奖励领取成功'
     });
   } catch (error) {
-    console.error('Claim quest reward error:', error);
+    console.error('[claimQuestReward] Error:', error);
+    console.error('[claimQuestReward] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to claim quest reward'
@@ -664,6 +747,8 @@ const getQuests = async (req, res) => {
     const { query } = req;
     const questType = query.type || 'all'; // all, main, side, daily
 
+    console.log('[getQuests] Starting getQuests, type:', questType);
+
     let queryBuilder = supabase.from('quests');
 
     if (questType !== 'all') {
@@ -675,8 +760,12 @@ const getQuests = async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    if (error) throw error;
+    if (error) {
+      console.error('[getQuests] Database query error:', error);
+      throw error;
+    }
 
+    console.log('[getQuests] Quests fetched successfully, count:', quests ? quests.length : 0);
     sendJson(res, 200, {
       success: true,
       data: {
@@ -684,7 +773,8 @@ const getQuests = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get quests error:', error);
+    console.error('[getQuests] Error:', error);
+    console.error('[getQuests] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to get quests'
@@ -697,6 +787,8 @@ const upgradeAttribute = async (req, res) => {
   try {
     const body = await parseBody(req);
     const { attribute, amount } = body;
+
+    console.log('[upgradeAttribute] Starting upgradeAttribute, attribute:', attribute, 'amount:', amount);
 
     if (!attribute) {
       return sendJson(res, 400, {
@@ -714,6 +806,8 @@ const upgradeAttribute = async (req, res) => {
 
     // Extract player ID from token
     const playerId = getPlayerIdFromToken(req);
+    console.log('[upgradeAttribute] Player ID from token:', playerId);
+
     if (!playerId) {
       return sendJson(res, 401, {
         success: false,
@@ -722,6 +816,7 @@ const upgradeAttribute = async (req, res) => {
     }
 
     // 获取玩家属性点数
+    console.log('[upgradeAttribute] Fetching player attribute points');
     const { data: player, error: playerError } = await supabase
       .from('players')
       .select('attribute_points')
@@ -729,6 +824,7 @@ const upgradeAttribute = async (req, res) => {
       .single();
 
     if (playerError || !player) {
+      console.log('[upgradeAttribute] Player not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Player not found'
@@ -738,6 +834,8 @@ const upgradeAttribute = async (req, res) => {
     const attributePoints = player.attribute_points || 0;
     const requiredPoints = amount * 1; // 每次升级 1 点
 
+    console.log('[upgradeAttribute] Current attribute points:', attributePoints, 'Required:', requiredPoints);
+
     if (attributePoints < requiredPoints) {
       return sendJson(res, 400, {
         success: false,
@@ -746,6 +844,7 @@ const upgradeAttribute = async (req, res) => {
     }
 
     // 获取当前属性值
+    console.log('[upgradeAttribute] Fetching player attributes');
     const { data: attributes, error: attrError } = await supabase
       .from('player_attributes')
       .select('*')
@@ -753,6 +852,7 @@ const upgradeAttribute = async (req, res) => {
       .single();
 
     if (attrError || !attributes) {
+      console.log('[upgradeAttribute] Attributes not found');
       return sendJson(res, 404, {
         success: false,
         error: 'Attributes not found'
@@ -761,6 +861,8 @@ const upgradeAttribute = async (req, res) => {
 
     // 检查属性是否已满级
     const currentValue = attributes[attribute] || 0;
+    console.log('[upgradeAttribute] Current attribute value:', currentValue);
+
     if (currentValue >= 100) {
       return sendJson(res, 400, {
         success: false,
@@ -770,8 +872,10 @@ const upgradeAttribute = async (req, res) => {
 
     // 计算新属性值
     const newValue = Math.min(currentValue + (amount * 10), 100);
+    console.log('[upgradeAttribute] New attribute value:', newValue);
 
     // 更新属性
+    console.log('[upgradeAttribute] Updating attribute');
     const { error: updateAttrError } = await supabase
       .from('player_attributes')
       .update({
@@ -779,9 +883,13 @@ const upgradeAttribute = async (req, res) => {
       })
       .eq('player_id', playerId);
 
-    if (updateAttrError) throw updateAttrError;
+    if (updateAttrError) {
+      console.error('[upgradeAttribute] Database update error:', updateAttrError);
+      throw updateAttrError;
+    }
 
     // 扣除属性点数
+    console.log('[upgradeAttribute] Updating player attribute points');
     const { error: updatePlayerError } = await supabase
       .from('players')
       .update({
@@ -789,7 +897,10 @@ const upgradeAttribute = async (req, res) => {
       })
       .eq('id', playerId);
 
-    if (updatePlayerError) throw updatePlayerError;
+    if (updatePlayerError) {
+      console.error('[upgradeAttribute] Database update error:', updatePlayerError);
+      throw updatePlayerError;
+    }
 
     // 返回更新后的数据
     const { data: updatedPlayer } = await supabase
@@ -798,6 +909,7 @@ const upgradeAttribute = async (req, res) => {
       .eq('id', playerId)
       .single();
 
+    console.log('[upgradeAttribute] Attribute upgraded successfully');
     sendJson(res, 200, {
       success: true,
       data: {
@@ -814,7 +926,8 @@ const upgradeAttribute = async (req, res) => {
       message: `属性 ${attribute} 从 ${currentValue} 提升到 ${newValue}`
     });
   } catch (error) {
-    console.error('Upgrade attribute error:', error);
+    console.error('[upgradeAttribute] Error:', error);
+    console.error('[upgradeAttribute] Error stack:', error.stack);
     sendJson(res, 500, {
       success: false,
       error: 'Failed to upgrade attribute'
@@ -849,7 +962,8 @@ const healthCheck = async (req, res) => {
 
     sendJson(res, isConnected ? 200 : 503, health);
   } catch (error) {
-    console.error('Health check error:', error);
+    console.error('[healthCheck] Error:', error);
+    console.error('[healthCheck] Error stack:', error.stack);
     sendJson(res, 500, {
       status: 'error',
       timestamp: new Date().toISOString(),
@@ -864,7 +978,7 @@ module.exports = async (req, res) => {
   const rawPath = query.path || url.replace('/api', '').split('?')[0] || '';
   const path = rawPath.startsWith('/') ? rawPath : '/' + rawPath;
 
-  console.log(`${method} ${path}`, { query, body: req.body });
+  console.log(`[${new Date().toISOString()}] ${method} ${path}`, { query, body: req.body });
 
   // Health check
   if (path === '/health' && method === 'GET') {
@@ -888,7 +1002,7 @@ module.exports = async (req, res) => {
     return getPlayer(req, res);
   }
 
-  // ==================== 新增的路由处理（已修复） ====================
+  // ==================== 新增的路由处理（已添加详细日志） ====================
 
   // Load save
   if (path.startsWith('/saves/') && path.endsWith('/load') && method === 'POST') {
