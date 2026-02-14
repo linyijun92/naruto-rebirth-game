@@ -4,7 +4,8 @@ module.exports = (req, res) => {
 
   // Vercel rewrites 将 /api/:path 转换为 /api?path=xxx
   // 所以需要从 query 中获取路径
-  const path = query.path || url.replace('/api', '').split('?')[0] || '/';
+  const rawPath = query.path || url.replace('/api', '').split('?')[0] || '';
+  const path = rawPath.startsWith('/') ? rawPath : '/' + rawPath;
 
   if (path === '/health') {
     res.status(200).json({
@@ -36,6 +37,7 @@ module.exports = (req, res) => {
   res.status(404).json({
     error: 'Not found',
     path: path,
+    rawPath: rawPath,
     url: url,
     query: query,
     availableEndpoints: ['/health', '/test']
