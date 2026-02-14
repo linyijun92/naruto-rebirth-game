@@ -161,7 +161,7 @@ export type QueryOptions = {
   order?: string;
 };
 
-export type ApiResponse<T = {
+export type ApiResponse<T = any> = {
   success: boolean;
   data?: T;
   error?: string;

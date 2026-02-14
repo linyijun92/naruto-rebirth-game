@@ -1,0 +1,19 @@
+{
+  "name": "naruto-rebirth-game",
+  "version": "1.0.0",
+  "description": "Naruto Rebirth Game - Full Stack Application",
+  "main": "api/index.ts",
+  "scripts": {
+    "dev": "cd src/backend && npm run dev"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
