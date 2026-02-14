@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const serverless = require('serverless-http');
 
 const app = express();
 
@@ -23,4 +24,13 @@ app.get('/test', (req, res) => {
   });
 });
 
-module.exports = app;
+// 根路由
+app.get('/', (req, res) => {
+  res.json({
+    message: 'API is running',
+    timestamp: new Date().toISOString(),
+    endpoints: ['/health', '/test']
+  });
+});
+
+module.exports = serverless(app);
