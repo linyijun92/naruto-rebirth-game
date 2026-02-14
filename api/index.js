@@ -35,9 +35,15 @@ const getPlayerIdFromToken = (req) => {
 
   const token = authHeader.substring(7); // Remove "Bearer " prefix
 
+  console.log('[getPlayerIdFromToken] Full token:', token);
+  console.log('[getPlayerIdFromToken] Token length:', token.length);
+
   // Mock token format: "mock-jwt-token-<player_id>"
   if (token.startsWith('mock-jwt-token-')) {
-    return token.substring(16); // Extract player_id from "mock-jwt-token-"
+    const playerId = token.substring(16); // Extract player_id from "mock-jwt-token-"
+    console.log('[getPlayerIdFromToken] Extracted player ID:', playerId);
+    console.log('[getPlayerIdFromToken] Player ID length:', playerId.length);
+    return playerId;
   }
 
   // If using real JWT, you would decode the token here
@@ -205,7 +211,7 @@ const getPlayer = async (req, res) => {
   }
 };
 
-// ==================== 新增的 API 端点函数（已添加详细日志） ====================
+// ==================== 新增的 API 端点函数（已修复 UUID 问题） ====================
 
 // 加载存档
 const loadSave = async (req, res) => {
@@ -238,7 +244,7 @@ const loadSave = async (req, res) => {
     const { data: save, error } = await supabase
       .from('saves')
       .select('*')
-      .eq('id', saveId)
+      .filter('id', 'eq', saveId)
       .single();
 
     if (error) {
@@ -382,7 +388,7 @@ const deleteSave = async (req, res) => {
     const { data: save, error } = await supabase
       .from('saves')
       .select('*')
-      .eq('id', saveId)
+      .filter('id', 'eq', saveId)
       .single();
 
     if (error || !save) {
@@ -408,7 +414,7 @@ const deleteSave = async (req, res) => {
     const { error: deleteError } = await supabase
       .from('saves')
       .delete()
-      .eq('id', saveId);
+      .filter('id', 'eq', saveId);
 
     if (deleteError) {
       console.error('[deleteSave] Database delete error:', deleteError);
@@ -451,7 +457,7 @@ const getSaves = async (req, res) => {
     const { data: saves, error } = await supabase
       .from('saves')
       .select('*')
-      .eq('player_id', playerId)
+      .filter('player_id', 'eq', playerId)
       .order('updated_at', { ascending: false })
       .limit(10);
 
@@ -508,7 +514,7 @@ const completeQuest = async (req, res) => {
     const { data: quest, error } = await supabase
       .from('quests')
       .select('*')
-      .eq('id', questId)
+      .filter('id', 'eq', questId)
       .single();
 
     if (error || !quest) {
@@ -536,7 +542,7 @@ const completeQuest = async (req, res) => {
         status: 'completed',
         completed_at: new Date().toISOString()
       })
-      .eq('id', questId);
+      .filter('id', 'eq', questId);
 
     if (updateError) {
       console.error('[completeQuest] Database update error:', updateError);
@@ -564,7 +570,7 @@ const completeQuest = async (req, res) => {
         .update({
           currency: supabase.raw(`currency + ${rewards.currency}`)
         })
-        .eq('id', playerId);
+        .filter('id', 'eq', playerId);
     }
 
     if (rewards.experience > 0) {
@@ -573,14 +579,14 @@ const completeQuest = async (req, res) => {
         .update({
           experience: supabase.raw(`experience + ${rewards.experience}`)
         })
-        .eq('id', playerId);
+        .filter('id', 'eq', playerId);
     }
 
     // 更新属性
     const { error: attrError } = await supabase
       .from('player_attributes')
       .select('*')
-      .eq('player_id', playerId)
+      .filter('player_id', 'eq', playerId)
       .single();
 
     if (!attrError) {
@@ -608,7 +614,7 @@ const completeQuest = async (req, res) => {
         await supabase
           .from('player_attributes')
           .update(updates)
-          .eq('player_id', playerId);
+          .filter('player_id', 'eq', playerId);
       }
     }
 
@@ -620,10 +626,6 @@ const completeQuest = async (req, res) => {
           currency: rewards.currency,
           experience: rewards.experience,
           description: `获得 ${rewards.currency} 货币和 ${rewards.experience} 经验值`
-        },
-        player: {
-          currency: 0,
-          experience: 0
         }
       },
       message: '任务完成'
@@ -669,7 +671,7 @@ const claimQuestReward = async (req, res) => {
     const { data: quest, error } = await supabase
       .from('quests')
       .select('*')
-      .eq('id', questId)
+      .filter('id', 'eq', questId)
       .single();
 
     if (error || !quest) {
@@ -697,7 +699,7 @@ const claimQuestReward = async (req, res) => {
         claimed: true,
         claimed_at: new Date().toISOString()
       })
-      .eq('id', questId);
+      .filter('id', 'eq', questId);
 
     if (updateError) {
       console.error('[claimQuestReward] Database update error:', updateError);
@@ -717,7 +719,7 @@ const claimQuestReward = async (req, res) => {
         .update({
           currency: supabase.raw(`currency + ${rewards.currency}`)
         })
-        .eq('id', playerId);
+        .filter('id', 'eq', playerId);
     }
 
     console.log('[claimQuestReward] Reward claimed successfully');
@@ -725,11 +727,8 @@ const claimQuestReward = async (req, res) => {
       success: true,
       data: {
         rewards,
-        player: {
-          currency: 0
-        }
-      },
-      message: '奖励领取成功'
+        message: '奖励领取成功'
+      }
     });
   } catch (error) {
     console.error('[claimQuestReward] Error:', error);
@@ -820,7 +819,7 @@ const upgradeAttribute = async (req, res) => {
     const { data: player, error: playerError } = await supabase
       .from('players')
       .select('attribute_points')
-      .eq('id', playerId)
+      .filter('id', 'eq', playerId)
       .single();
 
     if (playerError || !player) {
@@ -848,7 +847,7 @@ const upgradeAttribute = async (req, res) => {
     const { data: attributes, error: attrError } = await supabase
       .from('player_attributes')
       .select('*')
-      .eq('player_id', playerId)
+      .filter('player_id', 'eq', playerId)
       .single();
 
     if (attrError || !attributes) {
@@ -881,7 +880,7 @@ const upgradeAttribute = async (req, res) => {
       .update({
         [attribute]: newValue
       })
-      .eq('player_id', playerId);
+      .filter('player_id', 'eq', playerId);
 
     if (updateAttrError) {
       console.error('[upgradeAttribute] Database update error:', updateAttrError);
@@ -895,7 +894,7 @@ const upgradeAttribute = async (req, res) => {
       .update({
         attribute_points: attributePoints - requiredPoints
       })
-      .eq('id', playerId);
+      .filter('id', 'eq', playerId);
 
     if (updatePlayerError) {
       console.error('[upgradeAttribute] Database update error:', updatePlayerError);
@@ -906,7 +905,7 @@ const upgradeAttribute = async (req, res) => {
     const { data: updatedPlayer } = await supabase
       .from('players')
       .select('*')
-      .eq('id', playerId)
+      .filter('id', 'eq', playerId)
       .single();
 
     console.log('[upgradeAttribute] Attribute upgraded successfully');
@@ -1002,7 +1001,7 @@ module.exports = async (req, res) => {
     return getPlayer(req, res);
   }
 
-  // ==================== 新增的路由处理（已添加详细日志） ====================
+  // ==================== 新增的路由处理（已修复 UUID 问题） ====================
 
   // Load save
   if (path.startsWith('/saves/') && path.endsWith('/load') && method === 'POST') {
