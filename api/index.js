@@ -1,36 +1,37 @@
-const express = require('express');
-const cors = require('cors');
-const serverless = require('serverless-http');
+module.exports = (req, res) => {
+  // 处理不同的路径
+  const { url } = req;
 
-const app = express();
+  if (url === '/api/health' || url === '/health') {
+    res.status(200).json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      message: 'Health check passed'
+    });
+    return;
+  }
 
-app.use(cors());
-app.use(express.json());
+  if (url === '/api/test' || url === '/test') {
+    res.status(200).json({
+      message: 'Test endpoint working',
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
 
-// 健康检查
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    message: 'Health check passed'
+  if (url === '/api' || url === '/') {
+    res.status(200).json({
+      message: 'API is running',
+      timestamp: new Date().toISOString(),
+      endpoints: ['/health', '/test']
+    });
+    return;
+  }
+
+  // 其他路径返回 404
+  res.status(404).json({
+    error: 'Not found',
+    url: url,
+    availableEndpoints: ['/health', '/test']
   });
-});
-
-// 测试路由
-app.get('/test', (req, res) => {
-  res.json({
-    message: 'Test endpoint working',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// 根路由
-app.get('/', (req, res) => {
-  res.json({
-    message: 'API is running',
-    timestamp: new Date().toISOString(),
-    endpoints: ['/health', '/test']
-  });
-});
-
-module.exports = serverless(app);
+};
